@@ -15,5 +15,8 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Credentials - không commit file này, dùng application.yml.example làm template
+backend/src/main/resources/application.yml
+
 # Logs
 *.log
