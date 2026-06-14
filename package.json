@@ -1,0 +1,11 @@
+{
+  "name": "ngu-coc-huong-que",
+  "version": "1.0.0",
+  "description": "Ngũ Cốc Hương Quê – local dev server",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
