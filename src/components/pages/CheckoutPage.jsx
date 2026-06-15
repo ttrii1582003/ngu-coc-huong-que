@@ -1,3 +1,23 @@
+const SHIPPING_ZONES = {
+  'Đà Nẵng': 'central', 'Quảng Nam': 'central', 'Quảng Ngãi': 'central',
+  'Khánh Hòa': 'central', 'Thừa Thiên Huế': 'central', 'Gia Lai': 'central',
+  'Đắk Lắk': 'central', 'Lâm Đồng': 'central',
+  'Hà Nội': 'north', 'Hải Phòng': 'north', 'Quảng Ninh': 'north',
+  'Nghệ An': 'north', 'Thanh Hóa': 'north',
+  'TP. Hồ Chí Minh': 'south', 'Cần Thơ': 'south', 'An Giang': 'south',
+  'Bình Dương': 'south', 'Bình Phước': 'south', 'Đồng Nai': 'south',
+  'Long An': 'south', 'Tiền Giang': 'south', 'Vĩnh Long': 'south',
+};
+
+const ZONE_RATES = {
+  central: { standard: 20000, freeThreshold: 300000, express: 35000 },
+  other:   { standard: 40000, freeThreshold: 500000, express: 65000 },
+};
+
+function getZoneRates(city) {
+  return SHIPPING_ZONES[city] === 'central' ? ZONE_RATES.central : ZONE_RATES.other;
+}
+
 function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   const [form, setForm] = React.useState({
     name: currentUser?.fullName || '',
@@ -11,7 +31,10 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   const [submitting, setSubmitting] = React.useState(false);
 
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0);
-  const shipping = delivery === 'express' ? 45000 : (subtotal >= 300000 ? 0 : 30000);
+  const rates = getZoneRates(form.city);
+  const shipping = delivery === 'express'
+    ? rates.express
+    : (subtotal >= rates.freeThreshold ? 0 : rates.standard);
   const total = subtotal + shipping;
 
   const set = (key, val) => {
@@ -57,7 +80,7 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
       .then(r => r.json())
       .then(data => {
         setSubmitting(false);
-        onSuccess(data.orderCode);
+        onSuccess(data.orderCode, payment);
       })
       .catch(() => {
         setSubmitting(false);
@@ -77,6 +100,10 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
       {right && <div style={{ fontSize:14, fontWeight:600, color: right === 'Miễn phí' ? 'var(--green)' : 'var(--text)' }}>{right}</div>}
     </div>
   );
+
+  const standardLabel = !form.city
+    ? formatPrice(ZONE_RATES.other.standard)
+    : (subtotal >= rates.freeThreshold ? 'Miễn phí' : formatPrice(rates.standard));
 
   return (
     <div className="page-enter" style={{ padding:'32px 0 80px' }}>
@@ -137,9 +164,14 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
             <div className="card-section">
               <h2 className="section-title">Phương thức vận chuyển</h2>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                <RadioOpt checked={delivery==='standard'} onSelect={()=>setDelivery('standard')} label="Giao hàng tiêu chuẩn" sub="3–5 ngày làm việc" right={subtotal>=300000?'Miễn phí':formatPrice(30000)}/>
-                <RadioOpt checked={delivery==='express'} onSelect={()=>setDelivery('express')} label="Giao hàng nhanh" sub="1–2 ngày làm việc" right={formatPrice(45000)}/>
+                <RadioOpt checked={delivery==='standard'} onSelect={()=>setDelivery('standard')} label="Giao hàng tiêu chuẩn" sub="3–5 ngày làm việc" right={standardLabel}/>
+                <RadioOpt checked={delivery==='express'} onSelect={()=>setDelivery('express')} label="Giao hàng nhanh" sub="1–2 ngày làm việc" right={formatPrice(rates.express)}/>
               </div>
+              {form.city && SHIPPING_ZONES[form.city] !== 'central' && (
+                <p style={{ margin:'8px 0 0', fontSize:12, color:'var(--text-muted)' }}>
+                  Phí ship ngoài Miền Trung: tiêu chuẩn {formatPrice(ZONE_RATES.other.standard)} (miễn phí ≥ {formatPrice(ZONE_RATES.other.freeThreshold)}), nhanh {formatPrice(ZONE_RATES.other.express)}
+                </p>
+              )}
             </div>
 
             {/* Payment */}
@@ -149,6 +181,22 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
                 <RadioOpt checked={payment==='cod'} onSelect={()=>setPayment('cod')} label="Thanh toán khi nhận hàng (COD)" sub="Trả tiền mặt khi nhận"/>
                 <RadioOpt checked={payment==='bank'} onSelect={()=>setPayment('bank')} label="Chuyển khoản ngân hàng" sub="Chuyển trước khi giao hàng"/>
               </div>
+              {payment === 'bank' && (
+                <div style={{
+                  marginTop: 12, padding: '14px 16px',
+                  background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10
+                }}>
+                  <p style={{ margin:'0 0 10px', fontSize:13, fontWeight:600, color:'#92400E' }}>Thông tin chuyển khoản</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:5, fontSize:13, color:'#333' }}>
+                    <div><span style={{ color:'#888', minWidth:110, display:'inline-block' }}>Ngân hàng:</span> <strong>{window.BANK_INFO.bankName}</strong></div>
+                    <div><span style={{ color:'#888', minWidth:110, display:'inline-block' }}>Số tài khoản:</span> <strong>{window.BANK_INFO.accountNumber}</strong></div>
+                    <div><span style={{ color:'#888', minWidth:110, display:'inline-block' }}>Chủ tài khoản:</span> <strong>{window.BANK_INFO.accountHolder}</strong></div>
+                  </div>
+                  <p style={{ margin:'10px 0 0', fontSize:12, color:'#92400E' }}>
+                    Liên hệ người bán để xác nhận: <strong>0971700427</strong>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

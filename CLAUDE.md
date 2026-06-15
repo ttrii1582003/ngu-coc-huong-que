@@ -145,6 +145,7 @@ window.GOOGLE_CLIENT_ID // OAuth Client ID (public-safe, committed)
 window.CATEGORIES       // [{ id, label }] — 4 entries gồm 'all'
 window.formatPrice(p)   // → "45.000đ"
 window.calcDiscount(p, op) // → % giảm giá (0 nếu không có)
+window.BANK_INFO        // { bankName, accountNumber, accountHolder } — hiển thị khi chọn CK
 ```
 
 ### App state (`App.jsx`)
@@ -159,7 +160,8 @@ activeCategory  // id category đang lọc
 toast           // string|null – thông báo 2.8s
 products        // [] fetch từ GET /api/products khi mount
 loadingProducts // boolean
-orderCode       // string|null – từ POST /api/orders
+orderCode            // string|null – từ POST /api/orders
+orderPaymentMethod   // 'cod'|'bank'|null – để truyền vào OrderSuccessPage
 currentUser     // { email, fullName, phone, avatarUrl, role }|null
 token           // JWT|null – persist qua localStorage('hq_token')
 ```
@@ -173,8 +175,12 @@ Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'
 **Orders**
 - `orderCode`: `"HQ"` + 8 ký tự UUID uppercase (retry nếu trùng)
 - Giá tính server-side — không tin client
-- Phí ship: express 45k; standard ≥300k miễn phí; standard <300k → 30k
+- Phí ship theo vùng (cửa hàng ở Miền Trung):
+  - Miền Trung: standard 20k (free ≥300k), express 35k
+  - Miền Bắc/Nam: standard 40k (free ≥500k), express 65k
+  - Zone map trong `OrderService.ZONE_MAP` (22 tỉnh → north/central/south)
 - Snapshot `price_at_purchase` + `product_name` lưu trong `order_items`
+- `paymentMethod`: `'cod'` hoặc `'bank'`. Chuyển khoản: hiển thị `BANK_INFO` trong checkout + success page
 
 **Auth**
 - Register: BCrypt hash, email unique → 409 nếu trùng
@@ -245,3 +251,5 @@ Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 | Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products` (modal + live preview) |
 | Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` (sửa tên, SĐT; email readonly) |
 | Checkout pre-fill | `CheckoutPage.jsx` tự điền tên/SĐT/email từ `currentUser` khi đã login |
+| Phí ship theo vùng địa lý | `CheckoutPage.jsx` + `OrderService.java` (3 vùng Bắc/Trung/Nam, phí khác nhau) |
+| Chuyển khoản ngân hàng | `CheckoutPage.jsx` (box TK), `OrderSuccessPage.jsx` (hướng dẫn + ghi chú hoàn tiền) |

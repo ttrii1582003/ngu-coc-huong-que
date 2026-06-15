@@ -9,6 +9,7 @@ function App() {
   const [products, setProducts] = React.useState([]);
   const [loadingProducts, setLoadingProducts] = React.useState(true);
   const [orderCode, setOrderCode] = React.useState(null);
+  const [orderPaymentMethod, setOrderPaymentMethod] = React.useState(null);
   const [currentUser, setCurrentUser] = React.useState(null);
   const [token, setToken] = React.useState(() => localStorage.getItem('hq_token'));
 
@@ -121,12 +122,12 @@ function App() {
           cart={cart}
           token={token}
           currentUser={currentUser}
-          onSuccess={(code) => { setOrderCode(code); navigateTo('success'); }}
+          onSuccess={(code, payMethod) => { setOrderCode(code); setOrderPaymentMethod(payMethod); navigateTo('success'); }}
           navigateTo={navigateTo}
         />
       )}
       {page === 'success' && (
-        <OrderSuccessPage orderCode={orderCode} onContinue={() => { setCart([]); setOrderCode(null); navigateTo('home'); }} />
+        <OrderSuccessPage orderCode={orderCode} paymentMethod={orderPaymentMethod} onContinue={() => { setCart([]); setOrderCode(null); setOrderPaymentMethod(null); navigateTo('home'); }} />
       )}
       {page === 'login' && (
         <LoginPage onLogin={onLogin} navigateTo={navigateTo} />

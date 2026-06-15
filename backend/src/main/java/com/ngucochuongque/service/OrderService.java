@@ -20,9 +20,37 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
 
-    private static final int FREE_SHIPPING_THRESHOLD = 300_000;
-    private static final int STANDARD_SHIPPING       = 30_000;
-    private static final int EXPRESS_SHIPPING        = 45_000;
+    private static final int CENTRAL_STANDARD  = 20_000;
+    private static final int CENTRAL_EXPRESS   = 35_000;
+    private static final int CENTRAL_FREE      = 300_000;
+    private static final int OTHER_STANDARD    = 40_000;
+    private static final int OTHER_EXPRESS     = 65_000;
+    private static final int OTHER_FREE        = 500_000;
+
+    private static final java.util.Map<String, String> ZONE_MAP = java.util.Map.ofEntries(
+        java.util.Map.entry("Đà Nẵng",           "central"),
+        java.util.Map.entry("Quảng Nam",          "central"),
+        java.util.Map.entry("Quảng Ngãi",         "central"),
+        java.util.Map.entry("Khánh Hòa",          "central"),
+        java.util.Map.entry("Thừa Thiên Huế",     "central"),
+        java.util.Map.entry("Gia Lai",            "central"),
+        java.util.Map.entry("Đắk Lắk",           "central"),
+        java.util.Map.entry("Lâm Đồng",           "central"),
+        java.util.Map.entry("Hà Nội",             "north"),
+        java.util.Map.entry("Hải Phòng",          "north"),
+        java.util.Map.entry("Quảng Ninh",         "north"),
+        java.util.Map.entry("Nghệ An",            "north"),
+        java.util.Map.entry("Thanh Hóa",          "north"),
+        java.util.Map.entry("TP. Hồ Chí Minh",   "south"),
+        java.util.Map.entry("Cần Thơ",            "south"),
+        java.util.Map.entry("An Giang",           "south"),
+        java.util.Map.entry("Bình Dương",         "south"),
+        java.util.Map.entry("Bình Phước",         "south"),
+        java.util.Map.entry("Đồng Nai",           "south"),
+        java.util.Map.entry("Long An",            "south"),
+        java.util.Map.entry("Tiền Giang",         "south"),
+        java.util.Map.entry("Vĩnh Long",          "south")
+    );
 
     private final OrderRepository   orderRepository;
     private final ProductRepository productRepository;
@@ -62,7 +90,7 @@ public class OrderService {
         }
 
         // 2. Tính phí ship
-        int shippingCost = calcShipping(req.getDeliveryMethod(), subtotal);
+        int shippingCost = calcShipping(req.getDeliveryMethod(), subtotal, req.getCity());
         order.setSubtotal(subtotal);
         order.setShippingCost(shippingCost);
         order.setTotalAmount(subtotal + shippingCost);
@@ -85,9 +113,12 @@ public class OrderService {
                 .stream().map(this::toResponse).toList();
     }
 
-    private int calcShipping(String method, int subtotal) {
-        if ("express".equals(method)) return EXPRESS_SHIPPING;
-        return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING;
+    private int calcShipping(String method, int subtotal, String city) {
+        String zone = ZONE_MAP.getOrDefault(city != null ? city : "", "other");
+        boolean isCentral = "central".equals(zone);
+        int freeThreshold = isCentral ? CENTRAL_FREE : OTHER_FREE;
+        if ("express".equals(method)) return isCentral ? CENTRAL_EXPRESS : OTHER_EXPRESS;
+        return subtotal >= freeThreshold ? 0 : (isCentral ? CENTRAL_STANDARD : OTHER_STANDARD);
     }
 
     private String generateOrderCode() {

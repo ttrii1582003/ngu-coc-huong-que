@@ -12,4 +12,10 @@
 
   window.formatPrice = p => new Intl.NumberFormat('vi-VN').format(p) + 'đ';
   window.calcDiscount = (p, op) => op ? Math.round((1 - p / op) * 100) : 0;
+
+  window.BANK_INFO = {
+    bankName:      'MB Bank (Ngân hàng Quân đội)',
+    accountNumber: '0971700427',
+    accountHolder: 'ĐOÀN MINH TRI',
+  };
 })();
