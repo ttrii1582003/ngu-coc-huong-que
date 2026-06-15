@@ -1,5 +1,10 @@
-function CheckoutPage({ cart, token, onSuccess, navigateTo }) {
-  const [form, setForm] = React.useState({ name:'', phone:'', email:'', address:'', city:'', district:'' });
+function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
+  const [form, setForm] = React.useState({
+    name: currentUser?.fullName || '',
+    phone: currentUser?.phone || '',
+    email: currentUser?.email || '',
+    address: '', city: '', district: ''
+  });
   const [delivery, setDelivery] = React.useState('standard');
   const [payment, setPayment] = React.useState('cod');
   const [errors, setErrors] = React.useState({});
