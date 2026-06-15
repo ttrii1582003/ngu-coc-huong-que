@@ -92,6 +92,7 @@ ngu-coc-huong-que/
 | GET | `/api/categories` | – | 3 danh mục |
 | GET | `/api/cities` | – | 22 tỉnh/thành |
 | POST | `/api/orders` | – | Tạo đơn hàng → `{ orderCode, totalAmount, ... }` |
+| GET | `/api/orders/my` | Bearer JWT | Lịch sử đơn hàng của user đang login |
 | GET | `/api/orders/{orderCode}` | – | Chi tiết đơn hàng |
 | POST | `/api/auth/register` | – | Đăng ký email/password → JWT |
 | POST | `/api/auth/login` | – | Đăng nhập → JWT |
@@ -110,7 +111,7 @@ ngu-coc-huong-que/
 | `products` | 10 sản phẩm, FK → categories |
 | `product_benefits` | 1-to-many với products |
 | `cities` | 22 tỉnh/thành |
-| `orders` | Đơn hàng: customer info, delivery, amounts |
+| `orders` | Đơn hàng: customer info, delivery, amounts, user_id (nullable FK) |
 | `order_items` | Dòng đơn: snapshot price + name |
 | `users` | email, password_hash (nullable), auth_provider, role, avatar_url |
 
@@ -229,4 +230,5 @@ Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 | Đăng ký / Đăng nhập email+password | `RegisterPage.jsx`, `LoginPage.jsx`, `AuthController` |
 | Đăng nhập Google OAuth | `LoginPage.jsx` (GSI button) + `POST /api/auth/google` |
 | Persist login qua page refresh | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
-| Header user avatar + logout | `Header.jsx` (props: `currentUser`, `onLoginClick`, `onLogout`) |
+| Header user avatar + logout | `Header.jsx` (props: `currentUser`, `onLoginClick`, `onLogout`, `onMyOrders`) |
+| Lịch sử đơn hàng của user | `MyOrdersPage.jsx` + `GET /api/orders/my` (expandable detail) |
