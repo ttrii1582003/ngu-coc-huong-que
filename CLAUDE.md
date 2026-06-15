@@ -108,11 +108,22 @@ ngu-coc-huong-que/
         │   ├── controller/                         # REST controllers
         │   └── exception/                          # GlobalExceptionHandler, ResourceNotFoundException
         └── resources/
-            ├── application.yml
+            ├── application.yml                     # gitignored – tạo từ application.yml.example
+            ├── application.yml.example             # template (không có credentials thật)
             └── db/migration/
                 ├── V1__create_schema.sql           # DDL: 6 tables
-                └── V2__seed_data.sql               # 3 categories, 10 products, 22 cities
+                ├── V2__seed_data.sql               # 3 categories, 10 products, 22 cities
+                └── V3__add_users.sql               # Bảng users (login/register)
 ```
+
+---
+
+## Git
+
+- **Remote**: https://github.com/ttrii1582003/ngu-coc-huong-que
+- **Branch chính**: `master`
+- **Quy tắc**: mỗi tính năng làm trên nhánh riêng (`feature/xxx`) → merge về `master`
+- **File gitignored**: `application.yml`, `backend/target/`, `node_modules/`
 
 ---
 
@@ -126,6 +137,10 @@ ngu-coc-huong-que/
 | GET | `/api/cities` | 22 tỉnh/thành |
 | POST | `/api/orders` | Tạo đơn hàng mới |
 | GET | `/api/orders/{orderCode}` | Chi tiết đơn hàng theo mã HQ… |
+| POST | `/api/auth/register` | Đăng ký tài khoản (email + password) |
+| POST | `/api/auth/login` | Đăng nhập → JWT token |
+| POST | `/api/auth/google` | Xác thực Google ID token → JWT |
+| GET | `/api/auth/me` | Thông tin user (Bearer token required) |
 
 ### POST /api/orders — Request
 ```json

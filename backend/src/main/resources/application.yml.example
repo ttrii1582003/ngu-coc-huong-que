@@ -21,6 +21,13 @@ spring:
 server:
   port: 8081
 
+jwt:
+  secret: NgCocHuongQueSecretKey2026VeryLongForSecurity
+  expiration: 86400000
+
+google:
+  client-id: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+
 logging:
   level:
     com.ngucochuongque: INFO
