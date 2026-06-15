@@ -7,6 +7,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.ngucochuongque.config.JwtUtil;
 import com.ngucochuongque.dto.request.LoginRequest;
 import com.ngucochuongque.dto.request.RegisterRequest;
+import com.ngucochuongque.dto.request.UpdateProfileRequest;
 import com.ngucochuongque.dto.response.AuthResponse;
 import com.ngucochuongque.entity.User;
 import com.ngucochuongque.repository.UserRepository;
@@ -108,11 +109,19 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
+    public AuthResponse updateProfile(User user, UpdateProfileRequest req) {
+        user.setFullName(req.getFullName().trim());
+        user.setPhone(req.getPhone() != null ? req.getPhone().trim() : null);
+        userRepository.save(user);
+        return buildAuthResponse(user);
+    }
+
     private AuthResponse buildAuthResponse(User user) {
         return AuthResponse.builder()
                 .token(jwtUtil.generateToken(user.getEmail()))
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .phone(user.getPhone())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole())
                 .build();

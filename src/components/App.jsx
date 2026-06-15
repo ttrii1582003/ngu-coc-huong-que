@@ -84,7 +84,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = !['success', 'login', 'register', 'my-orders', 'admin-orders', 'admin-products'].includes(page);
+  const showHeader = !['success', 'login', 'register', 'my-orders', 'profile', 'admin-orders', 'admin-products'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -97,6 +97,7 @@ function App() {
           onLoginClick={() => navigateTo('login')}
           onLogout={onLogout}
           onMyOrders={() => navigateTo('my-orders')}
+          onProfile={() => navigateTo('profile')}
         />
       )}
 
@@ -119,6 +120,7 @@ function App() {
         <CheckoutPage
           cart={cart}
           token={token}
+          currentUser={currentUser}
           onSuccess={(code) => { setOrderCode(code); navigateTo('success'); }}
           navigateTo={navigateTo}
         />
@@ -140,6 +142,14 @@ function App() {
       )}
       {page === 'admin-products' && (
         <AdminProductsPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
+      )}
+      {page === 'profile' && (
+        <ProfilePage
+          token={token}
+          currentUser={currentUser}
+          onUpdate={user => setCurrentUser(user)}
+          onBack={() => navigateTo('home')}
+        />
       )}
 
       {cartOpen && (

@@ -3,6 +3,7 @@ package com.ngucochuongque.controller;
 import com.ngucochuongque.dto.request.GoogleLoginRequest;
 import com.ngucochuongque.dto.request.LoginRequest;
 import com.ngucochuongque.dto.request.RegisterRequest;
+import com.ngucochuongque.dto.request.UpdateProfileRequest;
 import com.ngucochuongque.dto.response.AuthResponse;
 import com.ngucochuongque.entity.User;
 import com.ngucochuongque.service.AuthService;
@@ -38,5 +39,11 @@ public class AuthController {
     @GetMapping("/me")
     public AuthResponse me(@AuthenticationPrincipal User user) {
         return authService.getMe(user);
+    }
+
+    @PutMapping("/profile")
+    public AuthResponse updateProfile(@AuthenticationPrincipal User user,
+                                      @Valid @RequestBody UpdateProfileRequest req) {
+        return authService.updateProfile(user, req);
     }
 }
