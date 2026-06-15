@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -29,6 +30,13 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = errorBody(HttpStatus.BAD_REQUEST, "Dữ liệu không hợp lệ");
         body.put("errors", fieldErrors);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).body(errorBody(status, ex.getReason()));
     }
 
     @ExceptionHandler(Exception.class)

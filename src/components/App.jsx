@@ -9,13 +9,47 @@ function App() {
   const [products, setProducts] = React.useState([]);
   const [loadingProducts, setLoadingProducts] = React.useState(true);
   const [orderCode, setOrderCode] = React.useState(null);
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [token, setToken] = React.useState(() => localStorage.getItem('hq_token'));
 
+  // Load products
   React.useEffect(() => {
     fetch(API_BASE + '/products')
       .then(r => r.json())
       .then(data => { setProducts(data); setLoadingProducts(false); })
       .catch(() => setLoadingProducts(false));
   }, []);
+
+  // Verify token & load user on mount
+  React.useEffect(() => {
+    if (!token) return;
+    fetch(API_BASE + '/auth/me', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    })
+      .then(r => {
+        if (!r.ok) throw new Error('Token expired');
+        return r.json();
+      })
+      .then(data => setCurrentUser(data))
+      .catch(() => {
+        localStorage.removeItem('hq_token');
+        setToken(null);
+      });
+  }, []);
+
+  const onLogin = (newToken, user) => {
+    localStorage.setItem('hq_token', newToken);
+    setToken(newToken);
+    setCurrentUser(user);
+    navigateTo('home');
+  };
+
+  const onLogout = () => {
+    localStorage.removeItem('hq_token');
+    setToken(null);
+    setCurrentUser(null);
+    if (window.google) window.google.accounts.id.disableAutoSelect();
+  };
 
   const addToCart = (product, qty = 1) => {
     setCart(prev => {
@@ -50,10 +84,19 @@ function App() {
     window.scrollTo(0, 0);
   };
 
+  const showHeader = page !== 'success' && page !== 'login' && page !== 'register';
+
   return (
     <div style={{ minHeight:'100vh' }}>
-      {page !== 'success' && (
-        <Header cartCount={cartCount} onCartOpen={() => setCartOpen(true)} onLogoClick={() => navigateTo('home')} />
+      {showHeader && (
+        <Header
+          cartCount={cartCount}
+          onCartOpen={() => setCartOpen(true)}
+          onLogoClick={() => navigateTo('home')}
+          currentUser={currentUser}
+          onLoginClick={() => navigateTo('login')}
+          onLogout={onLogout}
+        />
       )}
 
       {page === 'home' && (
@@ -80,6 +123,12 @@ function App() {
       )}
       {page === 'success' && (
         <OrderSuccessPage orderCode={orderCode} onContinue={() => { setCart([]); setOrderCode(null); navigateTo('home'); }} />
+      )}
+      {page === 'login' && (
+        <LoginPage onLogin={onLogin} navigateTo={navigateTo} />
+      )}
+      {page === 'register' && (
+        <RegisterPage onLogin={onLogin} navigateTo={navigateTo} />
       )}
 
       {cartOpen && (
