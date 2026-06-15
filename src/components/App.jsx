@@ -84,7 +84,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = !['success', 'login', 'register', 'my-orders', 'admin-orders'].includes(page);
+  const showHeader = !['success', 'login', 'register', 'my-orders', 'admin-orders', 'admin-products'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -136,7 +136,10 @@ function App() {
         <MyOrdersPage token={token} onBack={() => navigateTo('home')} />
       )}
       {page === 'admin-orders' && (
-        <AdminOrdersPage token={token} onLogout={onLogout} />
+        <AdminOrdersPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
+      )}
+      {page === 'admin-products' && (
+        <AdminProductsPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
       )}
 
       {cartOpen && (

@@ -1,4 +1,4 @@
-function AdminOrdersPage({ token, onLogout }) {
+function AdminOrdersPage({ token, onLogout, onNavigate }) {
   const [orders, setOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filterStatus, setFilterStatus] = React.useState('');
@@ -51,34 +51,9 @@ function AdminOrdersPage({ token, onLogout }) {
   }, {});
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F9FA' }}>
-      {/* Top bar */}
-      <div style={{
-        background: '#fff', borderBottom: '1px solid #E5E7EB',
-        padding: '0 1.5rem', height: 60,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <svg width="28" height="28" viewBox="0 0 30 30" fill="none">
-            <path d="M15 26V10" stroke="#C8873A" strokeWidth="1.8" strokeLinecap="round"/>
-            <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.85" transform="rotate(-12 15 8.5)"/>
-            <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.65" transform="rotate(12 15 8.5)"/>
-          </svg>
-          <span style={{ fontFamily: 'Lora, serif', fontWeight: 700, fontSize: '1.1rem', color: 'var(--primary-dark)' }}>
-            Ngũ Cốc — Admin
-          </span>
-          <span style={{
-            background: '#FEF3E2', color: '#C8873A', fontSize: '0.7rem',
-            fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 4
-          }}>ADMIN</span>
-        </div>
-        <button onClick={onLogout} style={{
-          background: 'none', border: '1px solid #E5E7EB', borderRadius: 6,
-          padding: '0.35rem 0.9rem', cursor: 'pointer', fontSize: '0.85rem', color: '#666'
-        }}>Đăng xuất</button>
-      </div>
-
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1.5rem 1rem' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
+      <AdminSidebar activePage="admin-orders" onNavigate={onNavigate} onLogout={onLogout} />
+      <div style={{ flex: 1, padding: '1.5rem', overflow: 'auto' }}>
         <h1 style={{ margin: '0 0 1.25rem', fontSize: '1.4rem', color: 'var(--primary-dark)', fontFamily: 'Lora, serif' }}>
           Quản lý đơn hàng
         </h1>
