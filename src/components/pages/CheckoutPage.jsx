@@ -1,4 +1,4 @@
-function CheckoutPage({ cart, onSuccess, navigateTo }) {
+function CheckoutPage({ cart, token, onSuccess, navigateTo }) {
   const [form, setForm] = React.useState({ name:'', phone:'', email:'', address:'', city:'', district:'' });
   const [delivery, setDelivery] = React.useState('standard');
   const [payment, setPayment] = React.useState('cod');
@@ -41,9 +41,12 @@ function CheckoutPage({ cart, onSuccess, navigateTo }) {
       items: cart.map(i => ({ productId: i.product.id, quantity: i.qty })),
     };
 
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     fetch(API_BASE + '/orders', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body),
     })
       .then(r => r.json())

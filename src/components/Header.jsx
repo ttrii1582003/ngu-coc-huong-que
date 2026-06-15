@@ -1,4 +1,4 @@
-function Header({ cartCount, onCartOpen, onLogoClick, currentUser, onLoginClick, onLogout }) {
+function Header({ cartCount, onCartOpen, onLogoClick, currentUser, onLoginClick, onLogout, onMyOrders }) {
   return (
     <header className="site-header">
       <div className="container" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
@@ -29,6 +29,9 @@ function Header({ cartCount, onCartOpen, onLogoClick, currentUser, onLoginClick,
               <span style={{ fontSize:14, fontWeight:500, color:'var(--text)', maxWidth:100, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                 {currentUser.fullName.split(' ').slice(-1)[0]}
               </span>
+              <button onClick={onMyOrders} className="btn btn-ghost" style={{ fontSize:13, padding:'4px 10px', height:'auto' }}>
+                Đơn hàng
+              </button>
               <button onClick={onLogout} className="btn btn-ghost" style={{ fontSize:13, padding:'4px 10px', height:'auto' }}>
                 Đăng xuất
               </button>

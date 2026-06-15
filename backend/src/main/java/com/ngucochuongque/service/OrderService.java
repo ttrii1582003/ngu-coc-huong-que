@@ -28,8 +28,7 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest req) {
-        // 1. Lấy products từ DB và tính subtotal (không tin số từ client)
+    public OrderResponse createOrder(CreateOrderRequest req, Integer userId) {
         List<OrderItemRequest> itemReqs = req.getItems();
         int subtotal = 0;
 
@@ -44,6 +43,7 @@ public class OrderService {
         order.setDeliveryMethod(req.getDeliveryMethod());
         order.setPaymentMethod(req.getPaymentMethod());
         order.setStatus("pending");
+        order.setUserId(userId);
 
         for (OrderItemRequest itemReq : itemReqs) {
             Product product = productRepository.findById(itemReq.getProductId())
@@ -77,6 +77,12 @@ public class OrderService {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tồn tại: " + orderCode));
         return toResponse(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findMyOrders(Integer userId) {
+        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream().map(this::toResponse).toList();
     }
 
     private int calcShipping(String method, int subtotal) {
