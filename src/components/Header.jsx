@@ -2,8 +2,8 @@ function Header({ cartCount, onCartOpen, onLogoClick, currentUser, onLoginClick,
   return (
     <header className="site-header">
       <div className="container" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
-        <button onClick={onLogoClick} className="logo-btn">
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+        <button onClick={onLogoClick} className="logo-btn" style={{ gap: 12 }}>
+          <svg width="42" height="42" viewBox="0 0 30 30" fill="none">
             <path d="M15 26V10" stroke="#C8873A" strokeWidth="1.8" strokeLinecap="round"/>
             <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.85" transform="rotate(-12 15 8.5)"/>
             <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.65" transform="rotate(12 15 8.5)"/>
