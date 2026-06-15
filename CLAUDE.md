@@ -2,33 +2,28 @@
 
 Full-stack e-commerce bán ngũ cốc: React SPA (no build) + Spring Boot 3 + PostgreSQL.
 
-> **Quy tắc cho Claude**: Sau mỗi lần thêm/sửa tính năng, **bắt buộc cập nhật file này ngay**:
-> - Thêm endpoint → cập nhật bảng **API**
-> - Thêm file/thư mục → cập nhật **Cấu trúc**
-> - Thêm state App → cập nhật **App state**
-> - Thêm tính năng → cập nhật bảng **Tính năng hiện tại**
+> **Claude rules**: Sau mỗi thay đổi — thêm endpoint → cập nhật **API**, thêm file → cập nhật **Cấu trúc**, thêm state → cập nhật **App state**, thêm tính năng → cập nhật **Tính năng hiện tại**.
 
 ---
 
 ## Chạy dự án
 
 ```bash
-# Terminal 1 – Frontend → http://localhost:8080
+# Frontend → http://localhost:8080
 npm start
 
-# Terminal 2 – Backend → http://localhost:8081/api
-cd backend
-mvn spring-boot:run
+# Backend → http://localhost:8081/api
+cd backend && mvn spring-boot:run
 ```
 
-**Yêu cầu**: Node.js, Java 17+, Maven 3.6+, PostgreSQL local với database `ngu_coc_huong_que`.
+**Yêu cầu**: Node.js, Java 17+, Maven 3.6+, PostgreSQL với database `ngu_coc_huong_que`.
 
-**Cấu hình** (`backend/src/main/resources/application.yml` — gitignored, tạo từ `application.yml.example`):
+`backend/src/main/resources/application.yml` (gitignored — tạo từ `application.yml.example`):
 ```yaml
 spring.datasource.url: jdbc:postgresql://localhost:5432/ngu_coc_huong_que
 spring.datasource.username: postgres
-spring.datasource.password: <mật khẩu>
-jwt.secret: <chuỗi bí mật dài>
+spring.datasource.password: <password>
+jwt.secret: <long secret>
 jwt.expiration: 86400000
 google.client-id: <Google OAuth Client ID>
 ```
@@ -41,7 +36,7 @@ google.client-id: <Google OAuth Client ID>
 |---|---|
 | Frontend | React 18.3.1 + Babel Standalone CDN, thuần CSS, Node.js dev server |
 | Backend | Java 17, Spring Boot 3.3.0, Spring Security + JWT (jjwt 0.11.5) |
-| Database | PostgreSQL 17, Flyway migrations (`V1`→`V3`), Hibernate/JPA, DataInitializer seed |
+| Database | PostgreSQL 17, Flyway migrations (V1→V3), Hibernate/JPA |
 | Auth | JWT HS256 24h, BCrypt, Google Identity Services (GSI) |
 
 ---
@@ -53,34 +48,36 @@ ngu-coc-huong-que/
 ├── index.html              # HTML shell – thứ tự <script> rất quan trọng
 ├── server.js               # Node.js dev server
 ├── src/
-│   ├── styles/main.css     # Toàn bộ CSS + design tokens
-│   ├── data/products.js    # window globals: API_BASE, CATEGORIES, GOOGLE_CLIENT_ID, helpers
+│   ├── styles/main.css
+│   ├── data/products.js    # window globals: API_BASE, CATEGORIES, GOOGLE_CLIENT_ID, helpers, BANK_INFO
 │   └── components/
 │       ├── ui/             # ProductImage.jsx, StarRating.jsx, Badge.jsx
 │       ├── cart/           # CartItem.jsx, CartSidebar.jsx
 │       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
-│       │                   # LoginPage.jsx, RegisterPage.jsx, MyOrdersPage.jsx
-│       │                   # AdminOrdersPage.jsx, AdminProductsPage.jsx
-│       ├── App.jsx         # Root + global state + page routing
-│       ├── Header.jsx      # Sticky header, cart button, user avatar/logout
+│       │                   # LoginPage, RegisterPage, MyOrdersPage, ProfilePage
+│       │                   # AdminOrdersPage, AdminProductsPage
+│       ├── App.jsx
+│       ├── Header.jsx
+│       ├── ProductCard.jsx
 │       ├── CategoryFilter.jsx
-│       └── AdminSidebar.jsx  # Dark sidebar shared by all admin pages
+│       └── AdminSidebar.jsx
 └── backend/src/main/
     ├── java/com/ngucochuongque/
     │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig, DataInitializer
     │   ├── entity/         # User, Product, Category, Order, OrderItem, City, ProductBenefit
-    │   ├── repository/     # Spring Data JPA repositories
-    │   ├── dto/            # request/ (Register, Login, GoogleLogin, CreateOrder) + response/
+    │   ├── repository/
+    │   ├── dto/            # request/ + response/
     │   ├── service/        # AuthService, ProductService, OrderService
-    │   ├── controller/     # AuthController, ProductController, OrderController, CategoryController, AdminController
+    │   ├── controller/     # AuthController, ProductController, OrderController
+    │   │                   # CategoryController, CityController, AdminController
     │   └── exception/      # GlobalExceptionHandler, ResourceNotFoundException
     └── resources/
-        ├── application.yml          # gitignored – chứa credentials thật
-        ├── application.yml.example  # template public
+        ├── application.yml          # gitignored
+        ├── application.yml.example
         └── db/migration/
-            ├── V1__create_schema.sql   # DDL: 6 bảng
-            ├── V2__seed_data.sql       # 3 categories, 10 products, 22 cities
-            └── V3__add_users.sql       # bảng users
+            ├── V1__create_schema.sql
+            ├── V2__seed_data.sql
+            └── V3__add_users.sql
 ```
 
 ---
@@ -89,29 +86,29 @@ ngu-coc-huong-que/
 
 | Method | Path | Auth | Mô tả |
 |---|---|---|---|
-| GET | `/api/products` | – | Danh sách sản phẩm (`?category=`, `?search=`) |
+| GET | `/api/products` | – | Danh sách (`?category=`, `?search=`) |
 | GET | `/api/products/{id}` | – | Chi tiết sản phẩm |
 | GET | `/api/categories` | – | 3 danh mục |
 | GET | `/api/cities` | – | 22 tỉnh/thành |
-| POST | `/api/orders` | – | Tạo đơn hàng → `{ orderCode, totalAmount, ... }` |
-| GET | `/api/orders/my` | Bearer JWT | Lịch sử đơn hàng của user đang login |
+| POST | `/api/orders` | – | Tạo đơn → `{ orderCode, totalAmount, ... }` |
+| GET | `/api/orders/my` | Bearer JWT | Lịch sử đơn của user |
 | GET | `/api/orders/{orderCode}` | – | Chi tiết đơn hàng |
-| POST | `/api/auth/register` | – | Đăng ký email/password → JWT |
+| POST | `/api/auth/register` | – | Đăng ký → JWT |
 | POST | `/api/auth/login` | – | Đăng nhập → JWT |
 | POST | `/api/auth/google` | – | Google ID token → JWT |
 | GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
 | PUT | `/api/auth/profile` | Bearer JWT | Cập nhật fullName, phone |
-| GET | `/api/admin/orders` | Bearer ADMIN | Tất cả đơn hàng (`?status=pending\|confirmed\|...`) |
-| PATCH | `/api/admin/orders/{id}/status` | Bearer ADMIN | Cập nhật trạng thái đơn |
-| POST | `/api/admin/products` | Bearer ADMIN | Tạo sản phẩm mới |
-| PUT | `/api/admin/products/{id}` | Bearer ADMIN | Cập nhật sản phẩm |
-| DELETE | `/api/admin/products/{id}` | Bearer ADMIN | Xóa sản phẩm |
+| GET | `/api/admin/orders` | ADMIN | Tất cả đơn (`?status=pending\|confirmed\|...`) |
+| PATCH | `/api/admin/orders/{id}/status` | ADMIN | Cập nhật trạng thái |
+| POST | `/api/admin/products` | ADMIN | Tạo sản phẩm |
+| PUT | `/api/admin/products/{id}` | ADMIN | Cập nhật sản phẩm |
+| DELETE | `/api/admin/products/{id}` | ADMIN | Xóa sản phẩm |
 
 ---
 
 ## Database
 
-7 bảng, quản lý bởi Flyway (`baseline-on-migrate: true`, `baseline-version: 2`):
+7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`):
 
 | Bảng | Nội dung |
 |---|---|
@@ -120,10 +117,10 @@ ngu-coc-huong-que/
 | `product_benefits` | 1-to-many với products |
 | `cities` | 22 tỉnh/thành |
 | `orders` | Đơn hàng: customer info, delivery, amounts, user_id (nullable FK) |
-| `order_items` | Dòng đơn: snapshot price + name |
+| `order_items` | Snapshot price + name |
 | `users` | email, password_hash (nullable), auth_provider, role, avatar_url |
 
-`auth_provider`: `'local'` (email/password) hoặc `'google'`. Google users có `password_hash = NULL`.
+`auth_provider`: `'local'` hoặc `'google'`. Google users có `password_hash = NULL`.
 
 ---
 
@@ -131,42 +128,44 @@ ngu-coc-huong-que/
 
 ### Script load order (`index.html`) — KHÔNG đảo thứ tự
 
-1. CDN: React → ReactDOM → Babel Standalone → Google GSI (`accounts.google.com/gsi/client`)
-2. `src/data/products.js` (regular `<script>` — setup globals trước Babel)
-3. UI primitives → cart → pages (LoginPage + RegisterPage **trước** App) → App.jsx
+1. CDN: React → ReactDOM → Babel Standalone
+2. `src/data/products.js` (regular `<script>` — globals trước Babel)
+3. UI primitives → Header → CategoryFilter → ProductCard → Cart
+4. Google GSI (`accounts.google.com/gsi/client`, async)
+5. Pages → AdminSidebar → **App.jsx** (cuối cùng)
 
-> Không dùng `import`/`export` — tất cả components là global functions/variables.
+> Không dùng `import`/`export` — tất cả components là global functions.
 
 ### Globals (`src/data/products.js`)
 
 ```js
-window.API_BASE         // 'http://localhost:8081/api'
-window.GOOGLE_CLIENT_ID // OAuth Client ID (public-safe, committed)
-window.CATEGORIES       // [{ id, label }] — 4 entries gồm 'all'
-window.formatPrice(p)   // → "45.000đ"
-window.calcDiscount(p, op) // → % giảm giá (0 nếu không có)
-window.BANK_INFO        // { bankName, accountNumber, accountHolder } — hiển thị khi chọn CK
+window.API_BASE            // 'http://localhost:8081/api'
+window.GOOGLE_CLIENT_ID    // OAuth Client ID (public-safe)
+window.CATEGORIES          // [{ id, label }] — 4 entries gồm 'all'
+window.formatPrice(p)      // → "45.000đ"
+window.calcDiscount(p, op) // → % giảm giá
+window.BANK_INFO           // { bankName, accountNumber, accountHolder }
 ```
 
 ### App state (`App.jsx`)
 
 ```js
-page            // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-orders'|'admin-products'
-selProduct      // product object đang xem chi tiết
-cart            // [{ product, qty }]
-cartOpen        // boolean – sidebar
-searchQuery     // debounced 280ms (tại HomePage)
-activeCategory  // id category đang lọc
-toast           // string|null – thông báo 2.8s
-products        // [] fetch từ GET /api/products khi mount
-loadingProducts // boolean
-orderCode            // string|null – từ POST /api/orders
-orderPaymentMethod   // 'cod'|'bank'|null – để truyền vào OrderSuccessPage
-currentUser     // { email, fullName, phone, avatarUrl, role }|null
-token           // JWT|null – persist qua localStorage('hq_token')
+page               // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-orders'|'admin-products'
+selProduct         // product object đang xem
+cart               // [{ product, qty }]
+cartOpen           // boolean
+searchQuery        // debounced 280ms
+activeCategory     // id đang lọc
+toast              // string|null – 2.8s
+products           // [] từ GET /api/products
+loadingProducts    // boolean
+orderCode          // string|null
+orderPaymentMethod // 'cod'|'bank'|null
+currentUser        // { email, fullName, phone, avatarUrl, role }|null
+token              // JWT|null – localStorage('hq_token')
 ```
 
-Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'`, `'profile'`, `'admin-orders'`, `'admin-products'`.
+Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admin-orders`, `admin-products`.
 
 ---
 
@@ -176,59 +175,54 @@ Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'
 - `orderCode`: `"HQ"` + 8 ký tự UUID uppercase (retry nếu trùng)
 - Giá tính server-side — không tin client
 - Phí ship theo vùng (cửa hàng ở Miền Trung):
-  - Miền Trung: standard 20k (free ≥300k), express 35k
-  - Miền Bắc/Nam: standard 40k (free ≥500k), express 65k
-  - Zone map trong `OrderService.ZONE_MAP` (22 tỉnh → north/central/south)
-- Snapshot `price_at_purchase` + `product_name` lưu trong `order_items`
-- `paymentMethod`: `'cod'` hoặc `'bank'`. Chuyển khoản: hiển thị `BANK_INFO` trong checkout + success page
+
+| Vùng | Standard | Miễn phí khi | Express |
+|---|---|---|---|
+| Miền Trung | 20.000đ | ≥ 300.000đ | 35.000đ |
+| Miền Bắc / Nam | 40.000đ | ≥ 500.000đ | 65.000đ |
+
+Zone map: `OrderService.ZONE_MAP` (22 tỉnh → north/central/south)
+
+- `paymentMethod`: `'cod'` hoặc `'bank'`. Chuyển khoản: hiển thị `BANK_INFO` trong checkout + success page; đơn xác nhận thủ công trong 24h
 
 **Auth**
 - Register: BCrypt hash, email unique → 409 nếu trùng
-- Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`; role `'admin'` redirect thẳng vào panel
+- Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`; admin → redirect panel
 - Google: verify ID token qua `GoogleIdTokenVerifier` → find-or-create user
-- Token persist: `localStorage('hq_token')`, verify `/api/auth/me` khi App mount
+- Token: `localStorage('hq_token')`, verify `/api/auth/me` khi mount
+- `DataInitializer` tạo admin khi startup: `admin@ngucochuongque.vn` / `admin123`
 
 ---
 
 ## Design System (`src/styles/main.css`)
 
 ```css
---primary:     #C8873A   /* cam đất – màu chủ đạo */
+--primary:     #C8873A   /* cam đất */
 --primary-dark:#8B5E2A   /* giá, heading */
 --green:       #4A7C59   /* healthy, free ship */
 --bg:          #FAF7F2   /* background kem */
 --text:        #2C1810   /* text nâu đậm */
 ```
 
-Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
+Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 
 ---
 
 ## Git
 
 - **Remote**: `https://github.com/ttrii1582003/ngu-coc-huong-que`
-- **Branch chính**: `master` | Feature: `feature/xxx` → merge `master` với `--no-ff`
-- **Gitignored**: `application.yml` (DB password, JWT secret) — commit `application.yml.example`
+- **Branch**: `master` | Feature: `feature/xxx` → merge `--no-ff`
+- **Gitignored**: `application.yml`, `*.log`, `backend/target/`
 
 ---
 
 ## Thêm tính năng
 
-**Component frontend mới**
-1. Tạo `.jsx` trong `src/components/`
-2. Thêm `<script type="text/babel" src="...">` vào `index.html` **trước** App.jsx
-3. Cập nhật CLAUDE.md (Cấu trúc + Tính năng hiện tại)
+**Frontend component mới**: tạo `.jsx` → thêm `<script type="text/babel">` vào `index.html` trước App.jsx → cập nhật CLAUDE.md
 
-**API endpoint mới**
-1. Entity → Repository → Service → Controller
-2. Restart: `Ctrl+C` → `mvn spring-boot:run` (hoặc `mvn clean spring-boot:run` nếu file mới)
-3. Cập nhật bảng API trong CLAUDE.md
+**API endpoint mới**: Entity → Repository → Service → Controller → restart backend (`Ctrl+C` → `mvn spring-boot:run`) → cập nhật CLAUDE.md
 
-**Sản phẩm / danh mục**
-- Sửa SQL trực tiếp trên PostgreSQL (`products`, `product_benefits`, `categories`)
-- Không cần ảnh — `ProductImage.jsx` tự vẽ SVG theo `category_id`, `bg_color`, `accent_color`
-
-**Sau khi sửa frontend** → refresh browser. **Sau khi sửa backend** → restart `mvn`.
+**Sản phẩm / danh mục**: sửa SQL trực tiếp trên PostgreSQL — không cần ảnh, `ProductImage.jsx` tự vẽ SVG theo `category_id`
 
 ---
 
@@ -236,20 +230,19 @@ Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 
 | Tính năng | Files chính |
 |---|---|
-| Xem & tìm kiếm sản phẩm | `HomePage.jsx` + `GET /api/products` |
+| Xem & tìm kiếm sản phẩm | `HomePage.jsx`, `ProductCard.jsx` + `GET /api/products` |
 | Chi tiết sản phẩm | `ProductDetailPage.jsx` |
-| Giỏ hàng + free ship bar ≥300k | `CartSidebar.jsx`, `CartItem.jsx` |
-| Đặt hàng (guest, không cần login) | `CheckoutPage.jsx` + `POST /api/orders` |
-| Mã đơn hàng từ backend | `OrderSuccessPage.jsx` (prop `orderCode`) |
-| Đăng ký / Đăng nhập email+password | `RegisterPage.jsx`, `LoginPage.jsx`, `AuthController` |
-| Đăng nhập Google OAuth | `LoginPage.jsx` (GSI button) + `POST /api/auth/google` |
-| Persist login qua page refresh | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
-| Header user avatar + logout | `Header.jsx` (props: `currentUser`, `onLoginClick`, `onLogout`, `onMyOrders`) |
-| Lịch sử đơn hàng của user | `MyOrdersPage.jsx` + `GET /api/orders/my` (expandable detail) |
-| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH /api/admin/orders/{id}/status` |
-| Admin tự tạo khi startup | `DataInitializer.java` (email: `admin@ngucochuongque.vn`, password: `admin123`) |
-| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products` (modal + live preview) |
-| Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` (sửa tên, SĐT; email readonly) |
-| Checkout pre-fill | `CheckoutPage.jsx` tự điền tên/SĐT/email từ `currentUser` khi đã login |
-| Phí ship theo vùng địa lý | `CheckoutPage.jsx` + `OrderService.java` (3 vùng Bắc/Trung/Nam, phí khác nhau) |
-| Chuyển khoản ngân hàng | `CheckoutPage.jsx` (box TK), `OrderSuccessPage.jsx` (hướng dẫn + ghi chú hoàn tiền) |
+| Giỏ hàng + free ship bar | `CartSidebar.jsx`, `CartItem.jsx` |
+| Đặt hàng (guest) | `CheckoutPage.jsx` + `POST /api/orders` |
+| Mã đơn hàng từ backend | `OrderSuccessPage.jsx` |
+| Đăng ký / Đăng nhập | `RegisterPage.jsx`, `LoginPage.jsx`, `AuthController` |
+| Google OAuth | `LoginPage.jsx` + `POST /api/auth/google` |
+| Persist login | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
+| Header avatar + logout | `Header.jsx` |
+| Lịch sử đơn hàng | `MyOrdersPage.jsx` + `GET /api/orders/my` |
+| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status` |
+| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products` |
+| Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` |
+| Checkout pre-fill | `CheckoutPage.jsx` (điền tên/SĐT/email từ `currentUser`) |
+| Phí ship theo vùng | `CheckoutPage.jsx` + `OrderService.java` |
+| Chuyển khoản ngân hàng | `CheckoutPage.jsx` + `OrderSuccessPage.jsx` + `window.BANK_INFO` |
