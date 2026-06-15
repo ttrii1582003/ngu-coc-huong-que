@@ -41,7 +41,7 @@ google.client-id: <Google OAuth Client ID>
 |---|---|
 | Frontend | React 18.3.1 + Babel Standalone CDN, thuần CSS, Node.js dev server |
 | Backend | Java 17, Spring Boot 3.3.0, Spring Security + JWT (jjwt 0.11.5) |
-| Database | PostgreSQL 17, Flyway migrations (`V1`→`V3`), Hibernate/JPA |
+| Database | PostgreSQL 17, Flyway migrations (`V1`→`V3`), Hibernate/JPA, DataInitializer seed |
 | Auth | JWT HS256 24h, BCrypt, Google Identity Services (GSI) |
 
 ---
@@ -59,18 +59,18 @@ ngu-coc-huong-que/
 │       ├── ui/             # ProductImage.jsx, StarRating.jsx, Badge.jsx
 │       ├── cart/           # CartItem.jsx, CartSidebar.jsx
 │       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
-│       │                   # LoginPage.jsx, RegisterPage.jsx
+│       │                   # LoginPage.jsx, RegisterPage.jsx, MyOrdersPage.jsx, AdminOrdersPage.jsx
 │       ├── App.jsx         # Root + global state + page routing
 │       ├── Header.jsx      # Sticky header, cart button, user avatar/logout
 │       └── CategoryFilter.jsx
 └── backend/src/main/
     ├── java/com/ngucochuongque/
-    │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig
+    │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig, DataInitializer
     │   ├── entity/         # User, Product, Category, Order, OrderItem, City, ProductBenefit
     │   ├── repository/     # Spring Data JPA repositories
     │   ├── dto/            # request/ (Register, Login, GoogleLogin, CreateOrder) + response/
     │   ├── service/        # AuthService, ProductService, OrderService
-    │   ├── controller/     # AuthController, ProductController, OrderController, CategoryController
+    │   ├── controller/     # AuthController, ProductController, OrderController, CategoryController, AdminController
     │   └── exception/      # GlobalExceptionHandler, ResourceNotFoundException
     └── resources/
         ├── application.yml          # gitignored – chứa credentials thật
@@ -98,6 +98,8 @@ ngu-coc-huong-que/
 | POST | `/api/auth/login` | – | Đăng nhập → JWT |
 | POST | `/api/auth/google` | – | Google ID token → JWT |
 | GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
+| GET | `/api/admin/orders` | Bearer ADMIN | Tất cả đơn hàng (`?status=pending\|confirmed\|...`) |
+| PATCH | `/api/admin/orders/{id}/status` | Bearer ADMIN | Cập nhật trạng thái đơn |
 
 ---
 
@@ -142,7 +144,7 @@ window.calcDiscount(p, op) // → % giảm giá (0 nếu không có)
 ### App state (`App.jsx`)
 
 ```js
-page            // 'home'|'product'|'checkout'|'success'|'login'|'register'
+page            // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'admin-orders'
 selProduct      // product object đang xem chi tiết
 cart            // [{ product, qty }]
 cartOpen        // boolean – sidebar
@@ -156,7 +158,7 @@ currentUser     // { email, fullName, avatarUrl, role }|null
 token           // JWT|null – persist qua localStorage('hq_token')
 ```
 
-Header ẩn trên các trang: `'success'`, `'login'`, `'register'`.
+Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'`, `'admin-orders'`.
 
 ---
 
@@ -170,7 +172,7 @@ Header ẩn trên các trang: `'success'`, `'login'`, `'register'`.
 
 **Auth**
 - Register: BCrypt hash, email unique → 409 nếu trùng
-- Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`
+- Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`; role `'admin'` redirect thẳng vào panel
 - Google: verify ID token qua `GoogleIdTokenVerifier` → find-or-create user
 - Token persist: `localStorage('hq_token')`, verify `/api/auth/me` khi App mount
 
@@ -232,3 +234,5 @@ Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 | Persist login qua page refresh | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
 | Header user avatar + logout | `Header.jsx` (props: `currentUser`, `onLoginClick`, `onLogout`, `onMyOrders`) |
 | Lịch sử đơn hàng của user | `MyOrdersPage.jsx` + `GET /api/orders/my` (expandable detail) |
+| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH /api/admin/orders/{id}/status` |
+| Admin tự tạo khi startup | `DataInitializer.java` (email: `admin@ngucochuongque.vn`, password: `admin123`) |
