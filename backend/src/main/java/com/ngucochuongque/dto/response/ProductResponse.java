@@ -21,4 +21,5 @@ public class ProductResponse {
     private List<String> benefits;
     private String bgColor;
     private String accentColor;
+    private String imageUrl;
 }

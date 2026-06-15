@@ -54,6 +54,9 @@ public class Product {
     @Column(name = "accent_color", nullable = false, length = 10)
     private String accentColor;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 

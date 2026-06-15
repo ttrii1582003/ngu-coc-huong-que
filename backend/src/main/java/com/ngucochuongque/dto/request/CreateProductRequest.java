@@ -20,5 +20,6 @@ public class CreateProductRequest {
     @NotBlank  private String accentColor;
     private String badge;
     private String badgeType;
+    private String imageUrl;
     private List<String> benefits;
 }

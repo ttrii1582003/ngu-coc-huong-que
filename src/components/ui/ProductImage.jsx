@@ -1,10 +1,26 @@
 function ProductImage({ product }) {
+  const [imgError, setImgError] = React.useState(false);
+  React.useEffect(() => { setImgError(false); }, [product.imageUrl]);
+
   const { bgColor, accentColor, category } = product;
   const base = {
     width: '100%', height: '100%', backgroundColor: bgColor,
     position: 'relative', overflow: 'hidden',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   };
+
+  if (product.imageUrl && !imgError) {
+    return (
+      <div style={{ ...base, backgroundColor: bgColor || '#FFF8F0' }}>
+        <img
+          src={product.imageUrl}
+          alt={product.name || ''}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
 
   if (category === 'breakfast') {
     const grains = [[105,88,13,7,30],[137,72,12,7,-20],[169,90,13,7,45],[119,110,11,6,65],[156,105,11,6,-40],[143,58,10,5,15],[90,100,9,5,50]];

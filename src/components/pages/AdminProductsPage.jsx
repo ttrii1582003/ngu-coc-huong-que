@@ -32,7 +32,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
   };
 
   const openCreate = () => {
-    setForm({ categoryId: 'breakfast', bgColor: '#FFF8F0', accentColor: '#C8873A', benefits: '' });
+    setForm({ categoryId: 'breakfast', bgColor: '#FFF8F0', accentColor: '#C8873A', benefits: '', imageUrl: '' });
     setModal({ mode: 'create' });
   };
 
@@ -43,6 +43,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
       description: p.description, bgColor: p.bgColor, accentColor: p.accentColor,
       badge: p.badge || '', badgeType: p.badgeType || '',
       benefits: (p.benefits || []).join('\n'),
+      imageUrl: p.imageUrl || '',
       _id: p.id
     });
     setModal({ mode: 'edit', product: p });
@@ -61,6 +62,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
     accentColor: form.accentColor,
     badge: form.badge?.trim() || null,
     badgeType: form.badgeType?.trim() || null,
+    imageUrl: form.imageUrl?.trim() || null,
     benefits: form.benefits ? form.benefits.split('\n').map(s => s.trim()).filter(Boolean) : [],
   });
 
@@ -92,6 +94,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
   const previewProduct = {
     id: 0, name: form.name || 'Tên sản phẩm', category: form.categoryId || 'breakfast',
     bgColor: form.bgColor || '#FFF8F0', accentColor: form.accentColor || '#C8873A',
+    imageUrl: form.imageUrl?.trim() || null,
   };
 
   return (
@@ -192,6 +195,9 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <Field label="Tên sản phẩm *">
                   <input className="field-input" value={form.name || ''} onChange={e => set('name', e.target.value)} placeholder="Ví dụ: Yến mạch hữu cơ" />
+                </Field>
+                <Field label="URL ảnh (tùy chọn)">
+                  <input className="field-input" value={form.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." />
                 </Field>
                 <Field label="Danh mục *">
                   <select className="field-input field-select" value={form.categoryId || ''} onChange={e => set('categoryId', e.target.value)}>

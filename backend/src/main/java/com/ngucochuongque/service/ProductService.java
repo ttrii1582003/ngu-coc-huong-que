@@ -92,6 +92,7 @@ public class ProductService {
         p.setAccentColor(req.getAccentColor());
         p.setBadge(req.getBadge());
         p.setBadgeType(req.getBadgeType());
+        p.setImageUrl(req.getImageUrl());
         if (p.getRating() == null) p.setRating(BigDecimal.valueOf(5.0));
         if (p.getReviews() == null) p.setReviews(0);
         List<String> benefits = req.getBenefits();
@@ -126,6 +127,7 @@ public class ProductService {
                 .benefits(benefits)
                 .bgColor(p.getBgColor())
                 .accentColor(p.getAccentColor())
+                .imageUrl(p.getImageUrl())
                 .build();
     }
 }
