@@ -1,65 +1,49 @@
-# Ngũ Cốc Hương Quê – Tài liệu dự án
+# Ngũ Cốc Hương Quê
 
-## Tổng quan
+Full-stack e-commerce bán ngũ cốc: React SPA (no build) + Spring Boot 3 + PostgreSQL.
 
-Website thương mại điện tử full-stack bán ngũ cốc và hạt dinh dưỡng thuần tự nhiên.
-- **Frontend**: React SPA tĩnh, không có build step, chạy qua Node.js local server
-- **Backend**: Java Spring Boot REST API kết nối PostgreSQL
+> **Quy tắc cho Claude**: Sau mỗi lần thêm/sửa tính năng, **bắt buộc cập nhật file này ngay**:
+> - Thêm endpoint → cập nhật bảng **API**
+> - Thêm file/thư mục → cập nhật **Cấu trúc**
+> - Thêm state App → cập nhật **App state**
+> - Thêm tính năng → cập nhật bảng **Tính năng hiện tại**
+> - Mọi thay đổi đáng kể → thêm entry vào **NOTES.md**
+
+---
+
+## Chạy dự án
+
+```bash
+# Terminal 1 – Frontend → http://localhost:8080
+npm start
+
+# Terminal 2 – Backend → http://localhost:8081/api
+cd backend
+mvn spring-boot:run
+```
+
+**Yêu cầu**: Node.js, Java 17+, Maven 3.6+, PostgreSQL local với database `ngu_coc_huong_que`.
+
+**Cấu hình** (`backend/src/main/resources/application.yml` — gitignored, tạo từ `application.yml.example`):
+```yaml
+spring.datasource.url: jdbc:postgresql://localhost:5432/ngu_coc_huong_que
+spring.datasource.username: postgres
+spring.datasource.password: <mật khẩu>
+jwt.secret: <chuỗi bí mật dài>
+jwt.expiration: 86400000
+google.client-id: <Google OAuth Client ID>
+```
 
 ---
 
 ## Tech Stack
 
-### Frontend
-| Thành phần | Phiên bản | Nguồn |
-|---|---|---|
-| React | 18.3.1 | CDN unpkg (UMD) |
-| ReactDOM | 18.3.1 | CDN unpkg (UMD) |
-| Babel Standalone | 7.29.0 | CDN unpkg (transpile JSX trực tiếp trên browser) |
-| Google Fonts | – | Lora (heading serif) + DM Sans (body sans-serif) |
-| CSS | Thuần CSS | `src/styles/main.css` |
-| Dev Server | Node.js built-in `http` | `server.js` |
-
-### Backend
-| Thành phần | Phiên bản | Ghi chú |
-|---|---|---|
-| Java | 17 | LTS |
-| Spring Boot | 3.3.0 | Web + Data JPA + Validation |
-| PostgreSQL | 17.4 | Database `ngu_coc_huong_que` |
-| Flyway | – | Migration: V1 schema, V2 seed data |
-| Hibernate | 6.5.2 | ORM, `ddl-auto: validate` |
-| Lombok | – | Giảm boilerplate |
-| Maven | 3.9.6 | Build tool |
-
----
-
-## Cách chạy
-
-### Khởi động toàn bộ hệ thống
-
-```bash
-# Terminal 1 – Frontend (Node.js server)
-npm start
-# → http://localhost:8080/
-
-# Terminal 2 – Backend (Spring Boot)
-cd backend
-mvn spring-boot:run
-# → http://localhost:8081/api/
-```
-
-### Yêu cầu
-- Node.js (bất kỳ phiên bản)
-- Java 17+
-- Maven 3.6+
-- PostgreSQL chạy local, database `ngu_coc_huong_que` đã tồn tại
-
-### Cấu hình DB (`backend/src/main/resources/application.yml`)
-```yaml
-spring.datasource.url: jdbc:postgresql://localhost:5432/ngu_coc_huong_que
-spring.datasource.username: postgres
-spring.datasource.password: 123456   # ← đổi nếu khác
-```
+| Layer | Stack |
+|---|---|
+| Frontend | React 18.3.1 + Babel Standalone CDN, thuần CSS, Node.js dev server |
+| Backend | Java 17, Spring Boot 3.3.0, Spring Security + JWT (jjwt 0.11.5) |
+| Database | PostgreSQL 17, Flyway migrations (`V1`→`V3`), Hibernate/JPA |
+| Auth | JWT HS256 24h, BCrypt, Google Identity Services (GSI) |
 
 ---
 
@@ -67,285 +51,184 @@ spring.datasource.password: 123456   # ← đổi nếu khác
 
 ```
 ngu-coc-huong-que/
-├── index.html                          # HTML shell (chỉ load scripts/styles)
-├── server.js                           # Local dev server – serve toàn bộ thư mục
-├── package.json
-├── CLAUDE.md
-├── NOTES.md                            # Changelog – cập nhật khi có thay đổi quan trọng
+├── index.html              # HTML shell – thứ tự <script> rất quan trọng
+├── server.js               # Node.js dev server
+├── NOTES.md                # Changelog – cập nhật khi có thay đổi quan trọng
 ├── src/
-│   ├── styles/
-│   │   └── main.css                    # Toàn bộ CSS + design tokens
-│   ├── data/
-│   │   └── products.js                 # CATEGORIES, API_BASE, helper functions (không còn PRODUCTS hardcode)
+│   ├── styles/main.css     # Toàn bộ CSS + design tokens
+│   ├── data/products.js    # window globals: API_BASE, CATEGORIES, GOOGLE_CLIENT_ID, helpers
 │   └── components/
-│       ├── ui/                         # Primitive components (không có state)
-│       │   ├── ProductImage.jsx        # SVG illustration theo category
-│       │   ├── StarRating.jsx          # Hiển thị sao đánh giá
-│       │   └── Badge.jsx               # Nhãn sản phẩm (Bán chạy, Sale…)
-│       ├── cart/                       # Cart feature
-│       │   ├── CartItem.jsx            # Một dòng sản phẩm trong giỏ
-│       │   └── CartSidebar.jsx         # Panel giỏ hàng trượt từ phải
-│       ├── pages/                      # Page-level components
-│       │   ├── HomePage.jsx            # Hero + search + product grid
-│       │   ├── ProductDetailPage.jsx   # Chi tiết sản phẩm
-│       │   ├── CheckoutPage.jsx        # Form thanh toán + POST /api/orders
-│       │   └── OrderSuccessPage.jsx    # Xác nhận đơn hàng (orderCode từ API)
-│       ├── Header.jsx                  # Sticky header + logo + nút giỏ hàng
-│       ├── CategoryFilter.jsx          # Tab lọc danh mục (cuộn ngang)
-│       ├── ProductCard.jsx             # Card sản phẩm trong grid
-│       └── App.jsx                     # Root component + state toàn cục + fetch products
-└── backend/
-    ├── pom.xml
-    └── src/main/
-        ├── java/com/ngucochuongque/
-        │   ├── NgCocHuongQueApplication.java
-        │   ├── config/CorsConfig.java              # Allow origin localhost:8080
-        │   ├── entity/                             # Category, Product, ProductBenefit, City, Order, OrderItem
-        │   ├── repository/                         # Spring Data JPA repositories
-        │   ├── dto/request/                        # CreateOrderRequest, OrderItemRequest
-        │   ├── dto/response/                       # ProductResponse, OrderResponse, CategoryResponse
-        │   ├── service/                            # Business logic: ProductService, OrderService…
-        │   ├── controller/                         # REST controllers
-        │   └── exception/                          # GlobalExceptionHandler, ResourceNotFoundException
-        └── resources/
-            ├── application.yml                     # gitignored – tạo từ application.yml.example
-            ├── application.yml.example             # template (không có credentials thật)
-            └── db/migration/
-                ├── V1__create_schema.sql           # DDL: 6 tables
-                ├── V2__seed_data.sql               # 3 categories, 10 products, 22 cities
-                └── V3__add_users.sql               # Bảng users (login/register)
+│       ├── ui/             # ProductImage.jsx, StarRating.jsx, Badge.jsx
+│       ├── cart/           # CartItem.jsx, CartSidebar.jsx
+│       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
+│       │                   # LoginPage.jsx, RegisterPage.jsx
+│       ├── App.jsx         # Root + global state + page routing
+│       ├── Header.jsx      # Sticky header, cart button, user avatar/logout
+│       └── CategoryFilter.jsx
+└── backend/src/main/
+    ├── java/com/ngucochuongque/
+    │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig
+    │   ├── entity/         # User, Product, Category, Order, OrderItem, City, ProductBenefit
+    │   ├── repository/     # Spring Data JPA repositories
+    │   ├── dto/            # request/ (Register, Login, GoogleLogin, CreateOrder) + response/
+    │   ├── service/        # AuthService, ProductService, OrderService
+    │   ├── controller/     # AuthController, ProductController, OrderController, CategoryController
+    │   └── exception/      # GlobalExceptionHandler, ResourceNotFoundException
+    └── resources/
+        ├── application.yml          # gitignored – chứa credentials thật
+        ├── application.yml.example  # template public
+        └── db/migration/
+            ├── V1__create_schema.sql   # DDL: 6 bảng
+            ├── V2__seed_data.sql       # 3 categories, 10 products, 22 cities
+            └── V3__add_users.sql       # bảng users
 ```
-
----
-
-## Git
-
-- **Remote**: https://github.com/ttrii1582003/ngu-coc-huong-que
-- **Branch chính**: `master`
-- **Quy tắc**: mỗi tính năng làm trên nhánh riêng (`feature/xxx`) → merge về `master`
-- **File gitignored**: `application.yml`, `backend/target/`, `node_modules/`
 
 ---
 
 ## API Endpoints
 
-| Method | Path | Mô tả |
-|---|---|---|
-| GET | `/api/products` | Tất cả sản phẩm. Query: `?category=nuts&search=hạnh` |
-| GET | `/api/products/{id}` | Chi tiết 1 sản phẩm |
-| GET | `/api/categories` | 3 danh mục |
-| GET | `/api/cities` | 22 tỉnh/thành |
-| POST | `/api/orders` | Tạo đơn hàng mới |
-| GET | `/api/orders/{orderCode}` | Chi tiết đơn hàng theo mã HQ… |
-| POST | `/api/auth/register` | Đăng ký tài khoản (email + password) |
-| POST | `/api/auth/login` | Đăng nhập → JWT token |
-| POST | `/api/auth/google` | Xác thực Google ID token → JWT |
-| GET | `/api/auth/me` | Thông tin user (Bearer token required) |
-
-### POST /api/orders — Request
-```json
-{
-  "customerName": "Nguyễn Văn A",
-  "customerPhone": "0912345678",
-  "customerEmail": "a@email.com",
-  "address": "123 Đường ABC",
-  "city": "Hà Nội",
-  "district": "Hoàn Kiếm",
-  "deliveryMethod": "standard",
-  "paymentMethod": "cod",
-  "items": [
-    { "productId": 1, "quantity": 2 }
-  ]
-}
-```
-
-### POST /api/orders — Response
-```json
-{
-  "orderCode": "HQAB12CD34",
-  "status": "pending",
-  "subtotal": 180000,
-  "shippingCost": 30000,
-  "totalAmount": 210000,
-  "createdAt": "2026-06-14T16:30:00Z"
-}
-```
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| GET | `/api/products` | – | Danh sách sản phẩm (`?category=`, `?search=`) |
+| GET | `/api/products/{id}` | – | Chi tiết sản phẩm |
+| GET | `/api/categories` | – | 3 danh mục |
+| GET | `/api/cities` | – | 22 tỉnh/thành |
+| POST | `/api/orders` | – | Tạo đơn hàng → `{ orderCode, totalAmount, ... }` |
+| GET | `/api/orders/{orderCode}` | – | Chi tiết đơn hàng |
+| POST | `/api/auth/register` | – | Đăng ký email/password → JWT |
+| POST | `/api/auth/login` | – | Đăng nhập → JWT |
+| POST | `/api/auth/google` | – | Google ID token → JWT |
+| GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
 
 ---
 
-## Database Schema
+## Database
 
-6 bảng, quản lý bởi Flyway:
+7 bảng, quản lý bởi Flyway (`baseline-on-migrate: true`, `baseline-version: 2`):
 
-| Bảng | Mô tả |
+| Bảng | Nội dung |
 |---|---|
 | `categories` | id (varchar PK), label |
-| `products` | 10 sản phẩm, foreign key → categories |
-| `product_benefits` | 1-to-many với products (3 benefits/sản phẩm) |
+| `products` | 10 sản phẩm, FK → categories |
+| `product_benefits` | 1-to-many với products |
 | `cities` | 22 tỉnh/thành |
-| `orders` | Đơn hàng: code, customer info, delivery, amounts |
-| `order_items` | Dòng đơn hàng: snapshot price + name |
+| `orders` | Đơn hàng: customer info, delivery, amounts |
+| `order_items` | Dòng đơn: snapshot price + name |
+| `users` | email, password_hash (nullable), auth_provider, role, avatar_url |
 
-**Flyway config**: `baseline-on-migrate: true`, `baseline-version: 2` — dùng khi database đã tồn tại trước khi chạy backend lần đầu.
-
----
-
-## Cơ chế load components (Frontend)
-
-Babel Standalone load từng file `.jsx` qua synchronous XHR theo thứ tự khai báo trong `index.html`. **Thứ tự script rất quan trọng** — components phải được load trước khi App.jsx gọi `ReactDOM.createRoot`.
-
-Thứ tự trong `index.html`:
-1. CDN: React → ReactDOM → Babel Standalone
-2. `src/data/products.js` (regular `<script>` — thiết lập globals trước)
-3. UI primitives → Layout → Product → Cart → Pages → App
+`auth_provider`: `'local'` (email/password) hoặc `'google'`. Google users có `password_hash = NULL`.
 
 ---
 
-## Globals (`src/data/products.js`)
+## Frontend
+
+### Script load order (`index.html`) — KHÔNG đảo thứ tự
+
+1. CDN: React → ReactDOM → Babel Standalone → Google GSI (`accounts.google.com/gsi/client`)
+2. `src/data/products.js` (regular `<script>` — setup globals trước Babel)
+3. UI primitives → cart → pages (LoginPage + RegisterPage **trước** App) → App.jsx
+
+> Không dùng `import`/`export` — tất cả components là global functions/variables.
+
+### Globals (`src/data/products.js`)
 
 ```js
-window.API_BASE   = 'http://localhost:8081/api'
-window.CATEGORIES = [{ id, label }, ...]   // 4 entries gồm 'all'
-window.formatPrice(p)         // → "45.000đ"
-window.calcDiscount(p, op)    // → số % (0 nếu không giảm)
+window.API_BASE         // 'http://localhost:8081/api'
+window.GOOGLE_CLIENT_ID // OAuth Client ID (public-safe, committed)
+window.CATEGORIES       // [{ id, label }] — 4 entries gồm 'all'
+window.formatPrice(p)   // → "45.000đ"
+window.calcDiscount(p, op) // → % giảm giá (0 nếu không có)
 ```
 
-> **PRODUCTS không còn hardcode** — được fetch từ `GET /api/products` khi App mount.
-
----
-
-## State Management (App.jsx)
+### App state (`App.jsx`)
 
 ```js
-page              // 'home' | 'product' | 'checkout' | 'success'
-selProduct        // product object đang xem chi tiết
-cart              // [{ product, qty }]
-cartOpen          // boolean – sidebar hiển thị không
-searchQuery       // chuỗi tìm kiếm (debounced 280ms tại HomePage)
-activeCategory    // id category đang lọc
-toast             // string | null – thông báo tạm 2.8s
-products          // [] – fetch từ API khi mount
-loadingProducts   // boolean – loading state
-orderCode         // string | null – mã đơn từ backend sau checkout
+page            // 'home'|'product'|'checkout'|'success'|'login'|'register'
+selProduct      // product object đang xem chi tiết
+cart            // [{ product, qty }]
+cartOpen        // boolean – sidebar
+searchQuery     // debounced 280ms (tại HomePage)
+activeCategory  // id category đang lọc
+toast           // string|null – thông báo 2.8s
+products        // [] fetch từ GET /api/products khi mount
+loadingProducts // boolean
+orderCode       // string|null – từ POST /api/orders
+currentUser     // { email, fullName, avatarUrl, role }|null
+token           // JWT|null – persist qua localStorage('hq_token')
 ```
+
+Header ẩn trên các trang: `'success'`, `'login'`, `'register'`.
 
 ---
 
-## Business Logic (Backend)
+## Business Logic
 
-- **Order code**: `"HQ"` + 8 ký tự UUID uppercase (unique, retry nếu trùng)
-- **Giá tính server-side**: subtotal = Σ(price_db × qty) — không tin giá từ client
-- **Phí ship**: express → 45.000đ; standard ≥300k → miễn phí; standard <300k → 30.000đ
-- **Snapshot**: `price_at_purchase` + `product_name` lưu vào `order_items`
+**Orders**
+- `orderCode`: `"HQ"` + 8 ký tự UUID uppercase (retry nếu trùng)
+- Giá tính server-side — không tin client
+- Phí ship: express 45k; standard ≥300k miễn phí; standard <300k → 30k
+- Snapshot `price_at_purchase` + `product_name` lưu trong `order_items`
 
----
-
-## Luồng điều hướng
-
-```
-home ──click card──▶ product ──add to cart──▶ (cart sidebar)
- ▲                                                   │
- │                                             checkout button
- │                                                   ▼
- └──────── onContinue ◀────── success ◀──── checkout ──POST /api/orders──▶ DB
-```
-
----
-
-## Tính năng chính
-
-| Tính năng | File |
-|---|---|
-| Load sản phẩm từ API | `App.jsx` + `GET /api/products` |
-| Tìm kiếm (debounce 280ms) | `pages/HomePage.jsx` |
-| Lọc danh mục | `CategoryFilter.jsx` + `App.jsx` |
-| Giỏ hàng (add/remove/qty) | `App.jsx` + `cart/` |
-| Thanh tiến độ free ship (≥300k) | `cart/CartSidebar.jsx` |
-| Form checkout + validation | `pages/CheckoutPage.jsx` |
-| Đặt hàng → lưu DB | `pages/CheckoutPage.jsx` + `POST /api/orders` |
-| Mã đơn hàng từ backend | `pages/OrderSuccessPage.jsx` (prop `orderCode`) |
-| Toast notification | `App.jsx` |
+**Auth**
+- Register: BCrypt hash, email unique → 409 nếu trùng
+- Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`
+- Google: verify ID token qua `GoogleIdTokenVerifier` → find-or-create user
+- Token persist: `localStorage('hq_token')`, verify `/api/auth/me` khi App mount
 
 ---
 
 ## Design System (`src/styles/main.css`)
 
 ```css
---primary:     #C8873A   /* Cam đất – màu chủ đạo */
---primary-dark:#8B5E2A   /* Giá, heading quan trọng */
---green:       #4A7C59   /* Accent xanh – healthy, miễn phí ship */
---bg:          #FAF7F2   /* Background chính (kem) */
---text:        #2C1810   /* Text chính (nâu đậm) */
+--primary:     #C8873A   /* cam đất – màu chủ đạo */
+--primary-dark:#8B5E2A   /* giá, heading */
+--green:       #4A7C59   /* healthy, free ship */
+--bg:          #FAF7F2   /* background kem */
+--text:        #2C1810   /* text nâu đậm */
 ```
 
-- Heading: `Lora` (Google Fonts) — serif, italic cho điểm nhấn
-- Body: `DM Sans` (Google Fonts) — sans-serif
+Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 
 ---
 
-## Responsive Breakpoints
+## Git
 
-| Breakpoint | Thay đổi |
-|---|---|
-| `≤ 1100px` | Product grid 4 → 3 cột |
-| `≤ 860px` | Hero decoration ẩn |
-| `≤ 820px` | Detail grid: 2 cột → 1 cột |
-| `≤ 780px` | Product grid 3 → 2 cột |
-| `≤ 768px` | Container padding nhỏ hơn |
-| `≤ 600px` | Hero padding nhỏ hơn |
-| `≤ 560px` | Form checkout 2 cột → 1 cột |
-| `≤ 480px` | Cart sidebar full width, ẩn label "Giỏ hàng" |
-| `≤ 380px` | Product grid → 1 cột |
+- **Remote**: `https://github.com/ttrii1582003/ngu-coc-huong-que`
+- **Branch chính**: `master` | Feature: `feature/xxx` → merge `master` với `--no-ff`
+- **Gitignored**: `application.yml` (DB password, JWT secret) — commit `application.yml.example`
 
 ---
 
-## Lưu ý khi chỉnh sửa
+## Thêm tính năng
 
-### Thêm/sửa sản phẩm
-Sản phẩm quản lý qua PostgreSQL. Sửa trực tiếp bằng SQL hoặc DBeaver trên bảng `products` + `product_benefits`. Không cần ảnh — `ProductImage.jsx` tự vẽ SVG theo `bg_color`, `accent_color`, `category_id`.
-
-### Thêm danh mục mới
-1. INSERT vào bảng `categories` trong DB
-2. Thêm entry vào `window.CATEGORIES` trong `src/data/products.js`
-3. Thêm branch `if (category === 'new-id')` trong `src/components/ui/ProductImage.jsx`
-
-### Thêm component mới (Frontend)
-1. Tạo file `.jsx` trong thư mục phù hợp dưới `src/components/`
+**Component frontend mới**
+1. Tạo `.jsx` trong `src/components/`
 2. Thêm `<script type="text/babel" src="...">` vào `index.html` **trước** App.jsx
-3. Không dùng `import`/`export` — tất cả là global functions
+3. Cập nhật CLAUDE.md (Cấu trúc + Tính năng hiện tại)
 
-### Thêm API endpoint mới (Backend)
-1. Tạo/sửa Entity → Repository → Service → Controller
-2. Không cần restart nếu dùng Spring DevTools; nếu không thì `Ctrl+C` rồi `mvn spring-boot:run`
+**API endpoint mới**
+1. Entity → Repository → Service → Controller
+2. Restart: `Ctrl+C` → `mvn spring-boot:run` (hoặc `mvn clean spring-boot:run` nếu file mới)
+3. Cập nhật bảng API trong CLAUDE.md
 
-### Sửa style
-Toàn bộ CSS trong `src/styles/main.css`. Dùng CSS variables (`--primary`, `--text`…) để thay đổi toàn hệ thống.
+**Sản phẩm / danh mục**
+- Sửa SQL trực tiếp trên PostgreSQL (`products`, `product_benefits`, `categories`)
+- Không cần ảnh — `ProductImage.jsx` tự vẽ SVG theo `category_id`, `bg_color`, `accent_color`
 
-### Sau khi sửa frontend
-Chỉ cần refresh trình duyệt — không cần build, không cần restart server.
-
-### Sau khi sửa backend
-`Ctrl+C` terminal backend → `mvn spring-boot:run` lại.
+**Sau khi sửa frontend** → refresh browser. **Sau khi sửa backend** → restart `mvn`.
 
 ---
 
-## Danh mục sản phẩm hiện tại
+## Tính năng hiện tại
 
-| Category | Sản phẩm |
+| Tính năng | Files chính |
 |---|---|
-| `breakfast` | Yến Mạch Nguyên Cám, Granola Hạnh Nhân Mật Ong, Oats Cán Dẹt Hữu Cơ |
-| `nuts` | Hạnh Nhân Rang Tự Nhiên, Óc Chó Sấy Khô California, Hạt Điều Rang Muối Biển, Mix Hạt Premium 7 Loại |
-| `healthy` | Ngũ Cốc Chia Seeds & Oats, Quinoa Hữu Cơ Peru, Yến Mạch Low Carb Diet |
-
----
-
-## Hướng dẫn cập nhật NOTES.md
-
-**Khi nào cần cập nhật `NOTES.md`:**
-- Thêm tính năng mới (endpoint, component, trang)
-- Thay đổi schema database (thêm bảng/cột)
-- Thay đổi business logic quan trọng (giá ship, order code, v.v.)
-- Thay đổi dependencies hoặc cấu hình hệ thống
-- Sửa bug quan trọng ảnh hưởng đến luồng chính
-
-Mỗi entry trong `NOTES.md` theo format: ngày + mô tả ngắn + file bị ảnh hưởng.
+| Xem & tìm kiếm sản phẩm | `HomePage.jsx` + `GET /api/products` |
+| Chi tiết sản phẩm | `ProductDetailPage.jsx` |
+| Giỏ hàng + free ship bar ≥300k | `CartSidebar.jsx`, `CartItem.jsx` |
+| Đặt hàng (guest, không cần login) | `CheckoutPage.jsx` + `POST /api/orders` |
+| Mã đơn hàng từ backend | `OrderSuccessPage.jsx` (prop `orderCode`) |
+| Đăng ký / Đăng nhập email+password | `RegisterPage.jsx`, `LoginPage.jsx`, `AuthController` |
+| Đăng nhập Google OAuth | `LoginPage.jsx` (GSI button) + `POST /api/auth/google` |
+| Persist login qua page refresh | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
+| Header user avatar + logout | `Header.jsx` (props: `currentUser`, `onLoginClick`, `onLogout`) |
