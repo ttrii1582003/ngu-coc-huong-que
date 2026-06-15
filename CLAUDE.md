@@ -78,7 +78,10 @@ ngu-coc-huong-que/
             ├── V1__create_schema.sql
             ├── V2__seed_data.sql
             ├── V3__add_users.sql
-            └── V4__update_provinces_2025.sql
+            ├── V4__link_orders_to_users.sql
+            ├── V5__add_product_image_url.sql
+            ├── V6__seed_product_images.sql
+            └── V7__update_provinces_2025.sql
 ```
 
 ---
@@ -109,7 +112,7 @@ ngu-coc-huong-que/
 
 ## Database
 
-7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`):
+7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`, migrations V1→V7):
 
 | Bảng | Nội dung |
 |---|---|
