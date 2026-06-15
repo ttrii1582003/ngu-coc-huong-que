@@ -7,7 +7,6 @@ Full-stack e-commerce bán ngũ cốc: React SPA (no build) + Spring Boot 3 + Po
 > - Thêm file/thư mục → cập nhật **Cấu trúc**
 > - Thêm state App → cập nhật **App state**
 > - Thêm tính năng → cập nhật bảng **Tính năng hiện tại**
-> - Mọi thay đổi đáng kể → thêm entry vào **NOTES.md**
 
 ---
 
@@ -53,7 +52,6 @@ google.client-id: <Google OAuth Client ID>
 ngu-coc-huong-que/
 ├── index.html              # HTML shell – thứ tự <script> rất quan trọng
 ├── server.js               # Node.js dev server
-├── NOTES.md                # Changelog – cập nhật khi có thay đổi quan trọng
 ├── src/
 │   ├── styles/main.css     # Toàn bộ CSS + design tokens
 │   ├── data/products.js    # window globals: API_BASE, CATEGORIES, GOOGLE_CLIENT_ID, helpers
