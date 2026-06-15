@@ -81,7 +81,8 @@ ngu-coc-huong-que/
             ├── V4__link_orders_to_users.sql
             ├── V5__add_product_image_url.sql
             ├── V6__seed_product_images.sql
-            └── V7__update_provinces_2025.sql
+            ├── V7__update_provinces_2025.sql
+            └── V8__add_remaining_provinces_2025.sql
 ```
 
 ---
@@ -93,7 +94,7 @@ ngu-coc-huong-que/
 | GET | `/api/products` | – | Danh sách (`?category=`, `?search=`) |
 | GET | `/api/products/{id}` | – | Chi tiết sản phẩm |
 | GET | `/api/categories` | – | 3 danh mục |
-| GET | `/api/cities` | – | 22 tỉnh/thành |
+| GET | `/api/cities` | – | 34 tỉnh/thành |
 | POST | `/api/orders` | – | Tạo đơn → `{ orderCode, totalAmount, ... }` |
 | GET | `/api/orders/my` | Bearer JWT | Lịch sử đơn của user |
 | GET | `/api/orders/{orderCode}` | – | Chi tiết đơn hàng |
@@ -112,14 +113,14 @@ ngu-coc-huong-que/
 
 ## Database
 
-7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`, migrations V1→V7):
+7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`, migrations V1→V8):
 
 | Bảng | Nội dung |
 |---|---|
 | `categories` | id (varchar PK), label |
 | `products` | 10 sản phẩm, FK → categories |
 | `product_benefits` | 1-to-many với products |
-| `cities` | 19 tỉnh/thành (cập nhật theo cải cách hành chính 1/7/2025) |
+| `cities` | 34 tỉnh/thành (phủ sóng toàn quốc, theo cải cách hành chính 1/7/2025) |
 | `orders` | Đơn hàng: customer info, delivery, amounts, user_id (nullable FK) |
 | `order_items` | Snapshot price + name |
 | `users` | email, password_hash (nullable), auth_provider, role, avatar_url |

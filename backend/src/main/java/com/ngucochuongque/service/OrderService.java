@@ -49,7 +49,23 @@ public class OrderService {
         java.util.Map.entry("Đồng Nai",          "south"),    // + Bình Phước cũ
         java.util.Map.entry("Tây Ninh",          "south"),    // + Long An cũ
         java.util.Map.entry("Đồng Tháp",         "south"),    // + Tiền Giang cũ
-        java.util.Map.entry("Vĩnh Long",         "south")     // + Bến Tre + Trà Vinh cũ
+        java.util.Map.entry("Vĩnh Long",         "south"),    // + Bến Tre + Trà Vinh cũ
+        java.util.Map.entry("Cà Mau",            "south"),    // + Bạc Liêu cũ
+        // Miền Bắc – các tỉnh mở rộng
+        java.util.Map.entry("Tuyên Quang",       "north"),    // + Hà Giang cũ
+        java.util.Map.entry("Lào Cai",           "north"),    // + Yên Bái cũ
+        java.util.Map.entry("Thái Nguyên",       "north"),    // + Bắc Kạn cũ
+        java.util.Map.entry("Phú Thọ",           "north"),    // + Vĩnh Phúc + Hòa Bình cũ
+        java.util.Map.entry("Bắc Ninh",          "north"),    // + Bắc Giang cũ
+        java.util.Map.entry("Hưng Yên",          "north"),    // + Thái Bình cũ
+        java.util.Map.entry("Ninh Bình",         "north"),    // + Hà Nam + Nam Định cũ
+        java.util.Map.entry("Quảng Trị",         "north"),    // + Quảng Bình cũ
+        java.util.Map.entry("Hà Tĩnh",           "north"),
+        java.util.Map.entry("Sơn La",            "north"),
+        java.util.Map.entry("Cao Bằng",          "north"),
+        java.util.Map.entry("Điện Biên",         "north"),
+        java.util.Map.entry("Lai Châu",          "north"),
+        java.util.Map.entry("Lạng Sơn",          "north")
     );
 
     private final OrderRepository   orderRepository;

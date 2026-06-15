@@ -3,8 +3,13 @@ const SHIPPING_ZONES = {
   'Khánh Hòa': 'central', 'Gia Lai': 'central', 'Đắk Lắk': 'central', 'Lâm Đồng': 'central',
   'Hà Nội': 'north', 'Hải Phòng': 'north', 'Quảng Ninh': 'north',
   'Nghệ An': 'north', 'Thanh Hóa': 'north',
+  'Tuyên Quang': 'north', 'Lào Cai': 'north', 'Thái Nguyên': 'north', 'Phú Thọ': 'north',
+  'Bắc Ninh': 'north', 'Hưng Yên': 'north', 'Ninh Bình': 'north',
+  'Quảng Trị': 'north', 'Hà Tĩnh': 'north',
+  'Sơn La': 'north', 'Cao Bằng': 'north', 'Điện Biên': 'north', 'Lai Châu': 'north', 'Lạng Sơn': 'north',
   'TP. Hồ Chí Minh': 'south', 'Cần Thơ': 'south', 'An Giang': 'south',
   'Đồng Nai': 'south', 'Tây Ninh': 'south', 'Đồng Tháp': 'south', 'Vĩnh Long': 'south',
+  'Cà Mau': 'south',
 };
 
 const ZONE_RATES = {
@@ -158,6 +163,89 @@ const DISTRICTS = {
     // Trà Vinh (sáp nhập vào Vĩnh Long)
     'Trà Vinh','Cầu Kè','Cầu Ngang','Duyên Hải','Tiểu Cần','Trà Cú','Châu Thành (Trà Vinh)',
   ],
+  'Tuyên Quang': [
+    // Tuyên Quang cũ
+    'Tuyên Quang','Chiêm Hóa','Hàm Yên','Lâm Bình','Na Hang','Sơn Dương','Yên Sơn',
+    // Hà Giang (sáp nhập vào Tuyên Quang)
+    'Hà Giang','Bắc Mê','Bắc Quang','Đồng Văn','Hoàng Su Phì','Mèo Vạc',
+    'Quản Bạ','Quang Bình','Vị Xuyên','Xín Mần','Yên Minh',
+  ],
+  'Lào Cai': [
+    // Lào Cai cũ
+    'Lào Cai','Bát Xát','Bắc Hà','Bảo Thắng','Bảo Yên','Mường Khương','Sa Pa','Si Ma Cai','Văn Bàn',
+    // Yên Bái (sáp nhập vào Lào Cai)
+    'Yên Bái','Nghĩa Lộ','Lục Yên','Mù Cang Chải','Trạm Tấu','Trấn Yên','Văn Chấn','Văn Yên','Yên Bình',
+  ],
+  'Thái Nguyên': [
+    // Thái Nguyên cũ
+    'Thái Nguyên','Sông Công','Phổ Yên','Đại Từ','Đồng Hỷ','Phú Bình','Phú Lương','Định Hóa','Võ Nhai',
+    // Bắc Kạn (sáp nhập vào Thái Nguyên)
+    'Bắc Kạn','Bạch Thông','Ba Bể','Chợ Đồn','Chợ Mới','Na Rì','Ngân Sơn','Pác Nặm',
+  ],
+  'Phú Thọ': [
+    // Phú Thọ cũ
+    'Việt Trì','Phú Thọ','Đoan Hùng','Hạ Hòa','Thanh Ba','Cẩm Khê','Yên Lập',
+    'Tân Sơn','Thanh Sơn','Thanh Thủy','Lâm Thao','Phù Ninh','Tam Nông',
+    // Vĩnh Phúc (sáp nhập vào Phú Thọ)
+    'Vĩnh Yên','Phúc Yên','Bình Xuyên','Lập Thạch','Sông Lô','Tam Đảo','Tam Dương','Vĩnh Tường','Yên Lạc',
+    // Hòa Bình (sáp nhập vào Phú Thọ)
+    'Hòa Bình','Cao Phong','Đà Bắc','Kim Bôi','Lạc Sơn','Lạc Thủy','Lương Sơn','Mai Châu','Tân Lạc','Yên Thủy',
+  ],
+  'Bắc Ninh': [
+    // Bắc Ninh cũ
+    'Bắc Ninh','Từ Sơn','Gia Bình','Lương Tài','Quế Võ','Thuận Thành','Tiên Du','Yên Phong',
+    // Bắc Giang (sáp nhập vào Bắc Ninh)
+    'Bắc Giang','Hiệp Hòa','Lạng Giang','Lục Nam','Lục Ngạn','Sơn Động','Tân Yên','Việt Yên','Yên Dũng','Yên Thế',
+  ],
+  'Hưng Yên': [
+    // Hưng Yên cũ
+    'Hưng Yên','Ân Thi','Kim Động','Khoái Châu','Mỹ Hào','Phù Cừ','Tiên Lữ','Văn Giang','Văn Lâm','Yên Mỹ',
+    // Thái Bình (sáp nhập vào Hưng Yên)
+    'Thái Bình','Đông Hưng','Hưng Hà','Kiến Xương','Quỳnh Phụ','Thái Thụy','Tiền Hải','Vũ Thư',
+  ],
+  'Ninh Bình': [
+    // Ninh Bình cũ
+    'Ninh Bình','Tam Điệp','Gia Viễn','Hoa Lư','Kim Sơn','Nho Quan','Yên Khánh','Yên Mô',
+    // Hà Nam (sáp nhập vào Ninh Bình)
+    'Phủ Lý','Duy Tiên','Kim Bảng','Lý Nhân','Thanh Liêm',
+    // Nam Định (sáp nhập vào Ninh Bình)
+    'Nam Định','Mỹ Lộc','Nam Trực','Nghĩa Hưng','Trực Ninh','Vụ Bản','Xuân Trường','Ý Yên','Hải Hậu','Giao Thủy',
+  ],
+  'Quảng Trị': [
+    // Quảng Trị cũ
+    'Đông Hà','TX. Quảng Trị','Gio Linh','Cam Lộ','Đa Krông','Hải Lăng','Hướng Hóa','Triệu Phong','Vĩnh Linh',
+    // Quảng Bình (sáp nhập vào Quảng Trị)
+    'Đồng Hới','Ba Đồn','Bố Trạch','Lệ Thủy','Minh Hóa','Quảng Trạch','Tuyên Hóa',
+  ],
+  'Hà Tĩnh': [
+    'Hà Tĩnh','Hồng Lĩnh','Kỳ Anh','Cẩm Xuyên','Can Lộc','Đức Thọ',
+    'Hương Khê','Hương Sơn','Lộc Hà','Nghi Xuân','Thạch Hà','Vũ Quang',
+  ],
+  'Cao Bằng': [
+    'Cao Bằng','Bảo Lạc','Bảo Lâm','Hà Quảng','Hạ Lang','Hòa An',
+    'Nguyên Bình','Quảng Hòa','Thạch An','Trùng Khánh',
+  ],
+  'Điện Biên': [
+    'Điện Biên Phủ','Mường Ảng','Mường Chà','Mường Nhé','Nậm Pồ',
+    'Tủa Chùa','Tuần Giáo','Điện Biên','Điện Biên Đông',
+  ],
+  'Lai Châu': [
+    'Lai Châu','Mường Tè','Nậm Nhùn','Phong Thổ','Sìn Hồ','Tân Uyên','Than Uyên',
+  ],
+  'Lạng Sơn': [
+    'Lạng Sơn','Bắc Sơn','Bình Gia','Cao Lộc','Chi Lăng','Đình Lập',
+    'Hữu Lũng','Lộc Bình','Tràng Định','Văn Lãng','Văn Quan',
+  ],
+  'Sơn La': [
+    'Sơn La','Bắc Yên','Mai Sơn','Mộc Châu','Mường La','Phù Yên',
+    'Quỳnh Nhai','Sông Mã','Sốp Cộp','Thuận Châu','Vân Hồ','Yên Châu',
+  ],
+  'Cà Mau': [
+    // Cà Mau cũ
+    'Cà Mau','Đầm Dơi','Cái Nước','Thới Bình','Trần Văn Thời','U Minh','Ngọc Hiển','Năm Căn','Phú Tân',
+    // Bạc Liêu (sáp nhập vào Cà Mau)
+    'Bạc Liêu','Đông Hải','Giá Rai','Hòa Bình (Bạc Liêu)','Hồng Dân','Phước Long','Vĩnh Lợi',
+  ],
 };
 
 function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
@@ -236,10 +324,13 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   };
 
   const cities = [
-    'An Giang','Cần Thơ','Đà Nẵng','Đắk Lắk','Đồng Nai','Đồng Tháp',
-    'Gia Lai','Hà Nội','Hải Phòng','Huế','Khánh Hòa','Lâm Đồng',
-    'Nghệ An','Quảng Ngãi','Quảng Ninh','Tây Ninh','Thanh Hóa',
-    'TP. Hồ Chí Minh','Vĩnh Long',
+    'An Giang','Bắc Ninh','Cà Mau','Cần Thơ','Cao Bằng',
+    'Đà Nẵng','Đắk Lắk','Điện Biên','Đồng Nai','Đồng Tháp',
+    'Gia Lai','Hà Nội','Hà Tĩnh','Hải Phòng','Huế',
+    'Hưng Yên','Khánh Hòa','Lai Châu','Lâm Đồng','Lạng Sơn',
+    'Lào Cai','Nghệ An','Ninh Bình','Phú Thọ','Quảng Ngãi',
+    'Quảng Ninh','Quảng Trị','Sơn La','Tây Ninh','Thái Nguyên',
+    'Thanh Hóa','TP. Hồ Chí Minh','Tuyên Quang','Vĩnh Long',
   ];
 
   const districtOptions = DISTRICTS[form.city] || [];
