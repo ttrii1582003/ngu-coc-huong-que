@@ -61,6 +61,9 @@ public class Order {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Column(name = "user_id")
+    private Integer userId;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 

@@ -84,7 +84,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = page !== 'success' && page !== 'login' && page !== 'register';
+  const showHeader = !['success', 'login', 'register', 'my-orders'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -96,6 +96,7 @@ function App() {
           currentUser={currentUser}
           onLoginClick={() => navigateTo('login')}
           onLogout={onLogout}
+          onMyOrders={() => navigateTo('my-orders')}
         />
       )}
 
@@ -117,6 +118,7 @@ function App() {
       {page === 'checkout' && (
         <CheckoutPage
           cart={cart}
+          token={token}
           onSuccess={(code) => { setOrderCode(code); navigateTo('success'); }}
           navigateTo={navigateTo}
         />
@@ -129,6 +131,9 @@ function App() {
       )}
       {page === 'register' && (
         <RegisterPage onLogin={onLogin} navigateTo={navigateTo} />
+      )}
+      {page === 'my-orders' && (
+        <MyOrdersPage token={token} onBack={() => navigateTo('home')} />
       )}
 
       {cartOpen && (
