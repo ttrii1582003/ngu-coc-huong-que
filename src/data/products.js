@@ -1,6 +1,6 @@
 (function () {
   window.API_BASE = 'http://localhost:8081/api';
-  window.GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+  window.GOOGLE_CLIENT_ID = '759784140280-7tuconro07arvk0msibvtgnrb7vn9as3.apps.googleusercontent.com';
 
   // CATEGORIES vẫn giữ client-side (có thêm 'all' mà backend không lưu)
   window.CATEGORIES = [
