@@ -41,7 +41,7 @@ function App() {
     localStorage.setItem('hq_token', newToken);
     setToken(newToken);
     setCurrentUser(user);
-    navigateTo('home');
+    navigateTo(user.role === 'admin' ? 'admin-orders' : 'home');
   };
 
   const onLogout = () => {
@@ -84,7 +84,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = !['success', 'login', 'register', 'my-orders'].includes(page);
+  const showHeader = !['success', 'login', 'register', 'my-orders', 'admin-orders'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -134,6 +134,9 @@ function App() {
       )}
       {page === 'my-orders' && (
         <MyOrdersPage token={token} onBack={() => navigateTo('home')} />
+      )}
+      {page === 'admin-orders' && (
+        <AdminOrdersPage token={token} onLogout={onLogout} />
       )}
 
       {cartOpen && (
