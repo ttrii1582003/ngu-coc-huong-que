@@ -77,7 +77,8 @@ ngu-coc-huong-que/
         └── db/migration/
             ├── V1__create_schema.sql
             ├── V2__seed_data.sql
-            └── V3__add_users.sql
+            ├── V3__add_users.sql
+            └── V4__update_provinces_2025.sql
 ```
 
 ---
@@ -115,7 +116,7 @@ ngu-coc-huong-que/
 | `categories` | id (varchar PK), label |
 | `products` | 10 sản phẩm, FK → categories |
 | `product_benefits` | 1-to-many với products |
-| `cities` | 22 tỉnh/thành |
+| `cities` | 19 tỉnh/thành (cập nhật theo cải cách hành chính 1/7/2025) |
 | `orders` | Đơn hàng: customer info, delivery, amounts, user_id (nullable FK) |
 | `order_items` | Snapshot price + name |
 | `users` | email, password_hash (nullable), auth_provider, role, avatar_url |
@@ -245,4 +246,5 @@ Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 | Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` |
 | Checkout pre-fill | `CheckoutPage.jsx` (điền tên/SĐT/email từ `currentUser`) |
 | Phí ship theo vùng | `CheckoutPage.jsx` + `OrderService.java` |
+| Dropdown khu vực giao hàng | `CheckoutPage.jsx` `DISTRICTS` (19 tỉnh × districts, cascade từ tỉnh) |
 | Chuyển khoản ngân hàng | `CheckoutPage.jsx` + `OrderSuccessPage.jsx` + `window.BANK_INFO` |

@@ -28,28 +28,28 @@ public class OrderService {
     private static final int OTHER_FREE        = 500_000;
 
     private static final java.util.Map<String, String> ZONE_MAP = java.util.Map.ofEntries(
-        java.util.Map.entry("Đà Nẵng",           "central"),
-        java.util.Map.entry("Quảng Nam",          "central"),
-        java.util.Map.entry("Quảng Ngãi",         "central"),
-        java.util.Map.entry("Khánh Hòa",          "central"),
-        java.util.Map.entry("Thừa Thiên Huế",     "central"),
-        java.util.Map.entry("Gia Lai",            "central"),
-        java.util.Map.entry("Đắk Lắk",           "central"),
-        java.util.Map.entry("Lâm Đồng",           "central"),
-        java.util.Map.entry("Hà Nội",             "north"),
-        java.util.Map.entry("Hải Phòng",          "north"),
-        java.util.Map.entry("Quảng Ninh",         "north"),
-        java.util.Map.entry("Nghệ An",            "north"),
-        java.util.Map.entry("Thanh Hóa",          "north"),
-        java.util.Map.entry("TP. Hồ Chí Minh",   "south"),
-        java.util.Map.entry("Cần Thơ",            "south"),
-        java.util.Map.entry("An Giang",           "south"),
-        java.util.Map.entry("Bình Dương",         "south"),
-        java.util.Map.entry("Bình Phước",         "south"),
-        java.util.Map.entry("Đồng Nai",           "south"),
-        java.util.Map.entry("Long An",            "south"),
-        java.util.Map.entry("Tiền Giang",         "south"),
-        java.util.Map.entry("Vĩnh Long",          "south")
+        // Miền Trung (cửa hàng)
+        java.util.Map.entry("Đà Nẵng",           "central"),  // + Quảng Nam cũ
+        java.util.Map.entry("Huế",               "central"),  // Thừa Thiên Huế → Huế
+        java.util.Map.entry("Quảng Ngãi",        "central"),  // + Kon Tum cũ
+        java.util.Map.entry("Khánh Hòa",         "central"),  // + Phú Yên cũ
+        java.util.Map.entry("Gia Lai",           "central"),  // + Bình Định cũ
+        java.util.Map.entry("Đắk Lắk",          "central"),  // + Đắk Nông cũ
+        java.util.Map.entry("Lâm Đồng",          "central"),  // + Ninh Thuận + Bình Thuận cũ
+        // Miền Bắc
+        java.util.Map.entry("Hà Nội",            "north"),
+        java.util.Map.entry("Hải Phòng",         "north"),    // + Hải Dương cũ
+        java.util.Map.entry("Quảng Ninh",        "north"),
+        java.util.Map.entry("Nghệ An",           "north"),
+        java.util.Map.entry("Thanh Hóa",         "north"),
+        // Miền Nam
+        java.util.Map.entry("TP. Hồ Chí Minh",  "south"),    // + Bình Dương + Bà Rịa-VT cũ
+        java.util.Map.entry("Cần Thơ",           "south"),    // + Hậu Giang + Sóc Trăng cũ
+        java.util.Map.entry("An Giang",          "south"),
+        java.util.Map.entry("Đồng Nai",          "south"),    // + Bình Phước cũ
+        java.util.Map.entry("Tây Ninh",          "south"),    // + Long An cũ
+        java.util.Map.entry("Đồng Tháp",         "south"),    // + Tiền Giang cũ
+        java.util.Map.entry("Vĩnh Long",         "south")     // + Bến Tre + Trà Vinh cũ
     );
 
     private final OrderRepository   orderRepository;

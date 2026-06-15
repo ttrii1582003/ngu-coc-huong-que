@@ -1,12 +1,10 @@
 const SHIPPING_ZONES = {
-  'Đà Nẵng': 'central', 'Quảng Nam': 'central', 'Quảng Ngãi': 'central',
-  'Khánh Hòa': 'central', 'Thừa Thiên Huế': 'central', 'Gia Lai': 'central',
-  'Đắk Lắk': 'central', 'Lâm Đồng': 'central',
+  'Đà Nẵng': 'central', 'Huế': 'central', 'Quảng Ngãi': 'central',
+  'Khánh Hòa': 'central', 'Gia Lai': 'central', 'Đắk Lắk': 'central', 'Lâm Đồng': 'central',
   'Hà Nội': 'north', 'Hải Phòng': 'north', 'Quảng Ninh': 'north',
   'Nghệ An': 'north', 'Thanh Hóa': 'north',
   'TP. Hồ Chí Minh': 'south', 'Cần Thơ': 'south', 'An Giang': 'south',
-  'Bình Dương': 'south', 'Bình Phước': 'south', 'Đồng Nai': 'south',
-  'Long An': 'south', 'Tiền Giang': 'south', 'Vĩnh Long': 'south',
+  'Đồng Nai': 'south', 'Tây Ninh': 'south', 'Đồng Tháp': 'south', 'Vĩnh Long': 'south',
 };
 
 const ZONE_RATES = {
@@ -17,6 +15,150 @@ const ZONE_RATES = {
 function getZoneRates(city) {
   return SHIPPING_ZONES[city] === 'central' ? ZONE_RATES.central : ZONE_RATES.other;
 }
+
+// Khu vực giao hàng theo tỉnh/thành (cập nhật theo cải cách hành chính 1/7/2025)
+// Sử dụng tên khu vực quen thuộc cho mục đích địa chỉ
+const DISTRICTS = {
+  'Hà Nội': [
+    'Ba Đình','Hoàn Kiếm','Đống Đa','Hai Bà Trưng','Cầu Giấy','Tây Hồ',
+    'Thanh Xuân','Long Biên','Hoàng Mai','Hà Đông','Bắc Từ Liêm','Nam Từ Liêm',
+    'Sơn Tây','Sóc Sơn','Đông Anh','Gia Lâm','Mê Linh','Đan Phượng',
+    'Hoài Đức','Thạch Thất','Quốc Oai','Chương Mỹ','Ba Vì','Phúc Thọ',
+    'Thường Tín','Thanh Trì','Ứng Hòa','Mỹ Đức','Phú Xuyên','Thanh Oai',
+  ],
+  'Hải Phòng': [
+    // Hải Phòng cũ
+    'Hồng Bàng','Ngô Quyền','Lê Chân','Hải An','Kiến An','Đồ Sơn','Dương Kinh',
+    'Thủy Nguyên','An Dương','An Lão','Kiến Thụy','Tiên Lãng','Vĩnh Bảo','Cát Hải',
+    // Hải Dương (sáp nhập vào Hải Phòng)
+    'Hải Dương','Chí Linh','Kinh Môn','Nam Sách','Thanh Hà',
+    'Cẩm Giàng','Bình Giang','Gia Lộc','Tứ Kỳ','Ninh Giang','Thanh Miện',
+  ],
+  'Quảng Ninh': [
+    'Hạ Long','Móng Cái','Uông Bí','Cẩm Phả','Quảng Yên','Đông Triều',
+    'Vân Đồn','Tiên Yên','Đầm Hà','Hải Hà','Bình Liêu','Ba Chẽ','Cô Tô',
+  ],
+  'Nghệ An': [
+    'Vinh','Cửa Lò','Thái Hòa','Hoàng Mai','Diễn Châu','Yên Thành',
+    'Nghi Lộc','Hưng Nguyên','Nam Đàn','Thanh Chương','Đô Lương','Anh Sơn',
+    'Con Cuông','Tân Kỳ','Nghĩa Đàn','Quỳnh Lưu','Quỳ Hợp','Quỳ Châu',
+    'Tương Dương','Kỳ Sơn',
+  ],
+  'Thanh Hóa': [
+    'Thanh Hóa','Sầm Sơn','Bỉm Sơn','Nghi Sơn','Hà Trung','Hậu Lộc',
+    'Hoằng Hóa','Quảng Xương','Nông Cống','Đông Sơn','Triệu Sơn','Thiệu Hóa',
+    'Yên Định','Vĩnh Lộc','Thạch Thành','Cẩm Thủy','Ngọc Lặc','Lang Chánh',
+    'Như Xuân','Như Thanh','Thường Xuân','Bá Thước','Quan Hóa','Quan Sơn','Mường Lát',
+  ],
+  'Đà Nẵng': [
+    // Đà Nẵng cũ
+    'Hải Châu','Thanh Khê','Sơn Trà','Ngũ Hành Sơn','Liên Chiểu','Cẩm Lệ','Hòa Vang',
+    // Quảng Nam (sáp nhập vào Đà Nẵng)
+    'Hội An','Tam Kỳ','Điện Bàn','Duy Xuyên','Thăng Bình','Núi Thành',
+    'Phú Ninh','Hiệp Đức','Tiên Phước','Bắc Trà My','Nam Trà My',
+    'Phước Sơn','Đại Lộc','Quế Sơn','Nông Sơn','Tây Giang','Đông Giang','Nam Giang',
+  ],
+  'Huế': [
+    'TP. Huế','Hương Thủy','Hương Trà',
+    'Phong Điền','Quảng Điền','Phú Vang','Phú Lộc','A Lưới','Nam Đông',
+  ],
+  'Quảng Ngãi': [
+    // Quảng Ngãi cũ
+    'Quảng Ngãi','Đức Phổ','Mộ Đức','Tư Nghĩa','Nghĩa Hành',
+    'Bình Sơn','Sơn Hà','Sơn Tây','Trà Bồng','Minh Long','Lý Sơn',
+    // Kon Tum (sáp nhập vào Quảng Ngãi)
+    'Kon Tum','Đắk Hà','Đắk Tô','Ngọc Hồi','Sa Thầy','Kon Plông','Kon Rẫy','Tu Mơ Rông',
+  ],
+  'Khánh Hòa': [
+    // Khánh Hòa cũ
+    'Nha Trang','Cam Ranh','Cam Lâm','Diên Khánh','Khánh Vĩnh','Khánh Sơn','Vạn Ninh','Ninh Hòa',
+    // Phú Yên (sáp nhập vào Khánh Hòa)
+    'Tuy Hòa','Sông Cầu','Đông Hòa','Tây Hòa','Phú Hòa','Tuy An','Sơn Hòa','Sông Hinh','Đồng Xuân',
+  ],
+  'Gia Lai': [
+    // Gia Lai cũ
+    'Pleiku','An Khê','Ayun Pa','Chư Pah','Chư Prông','Chư Sê','Chư Pưh',
+    'Đắk Đoa','Đắk Pơ','Đức Cơ','Ia Grai','Ia Pa','KBang','Kông Chro','Krông Pa','Mang Yang','Phú Thiện',
+    // Bình Định (sáp nhập vào Gia Lai)
+    'Quy Nhơn','An Nhơn','Hoài Nhơn','Tây Sơn','Phù Cát','Phù Mỹ',
+    'Vĩnh Thạnh','Tuy Phước','An Lão','Hoài Ân','Vân Canh',
+  ],
+  'Đắk Lắk': [
+    // Đắk Lắk cũ
+    'Buôn Ma Thuột','Buôn Hồ','Ea Súp','Buôn Đôn','Cư Mgar','Ea Kar',
+    'Ea Hleo','Krông Ana','Krông Bông','Krông Búk','Krông Năng','Krông Pắc','Lắk','Mdrắk',
+    // Đắk Nông (sáp nhập vào Đắk Lắk)
+    'Gia Nghĩa','Đắk Glong','Đắk Mil','Đắk Rlấp','Đắk Song','Krông Nô','Tuy Đức','Cư Jút',
+  ],
+  'Lâm Đồng': [
+    // Lâm Đồng cũ
+    'Đà Lạt','Bảo Lộc','Đam Rông','Lạc Dương','Lâm Hà','Đơn Dương',
+    'Đức Trọng','Di Linh','Bảo Lâm','Đạ Huoai','Đạ Tẻh','Cát Tiên',
+    // Ninh Thuận (sáp nhập vào Lâm Đồng)
+    'Phan Rang-Tháp Chàm','Ninh Phước','Ninh Hải','Ninh Sơn','Bác Ái','Thuận Bắc','Thuận Nam',
+    // Bình Thuận (sáp nhập vào Lâm Đồng)
+    'Phan Thiết','La Gi','Bắc Bình','Hàm Thuận Bắc','Hàm Thuận Nam','Hàm Tân','Đức Linh','Tánh Linh',
+  ],
+  'TP. Hồ Chí Minh': [
+    // TP. HCM cũ – nội thành
+    'Quận 1','Quận 3','Quận 4','Quận 5','Quận 6','Quận 7','Quận 8',
+    'Quận 10','Quận 11','Quận 12','Bình Thạnh','Bình Tân','Gò Vấp',
+    'Phú Nhuận','Tân Bình','Tân Phú','Thủ Đức',
+    // TP. HCM cũ – ngoại thành
+    'Bình Chánh','Cần Giờ','Củ Chi','Hóc Môn','Nhà Bè',
+    // Bình Dương (sáp nhập vào TP. HCM)
+    'Thủ Dầu Một','Dĩ An','Thuận An','Bến Cát','Tân Uyên','Phú Giáo','Bàu Bàng','Dầu Tiếng',
+    // Bà Rịa – Vũng Tàu (sáp nhập vào TP. HCM)
+    'Vũng Tàu','Bà Rịa','Phú Mỹ','Châu Đức','Long Điền','Xuyên Mộc','Đất Đỏ',
+  ],
+  'Cần Thơ': [
+    // Cần Thơ cũ
+    'Ninh Kiều','Bình Thủy','Cái Răng','Ô Môn','Thốt Nốt',
+    'Phong Điền','Cờ Đỏ','Thới Lai','Vĩnh Thạnh',
+    // Hậu Giang (sáp nhập vào Cần Thơ)
+    'Vị Thanh','Ngã Bảy','Long Mỹ','Vị Thủy','Châu Thành A','Phụng Hiệp',
+    // Sóc Trăng (sáp nhập vào Cần Thơ)
+    'Sóc Trăng','Ngã Năm','Vĩnh Châu','Kế Sách','Mỹ Tú','Long Phú','Mỹ Xuyên','Thạnh Trị','Trần Đề',
+  ],
+  'An Giang': [
+    'Long Xuyên','Châu Đốc','Tân Châu',
+    'An Phú','Châu Phú','Châu Thành','Chợ Mới','Phú Tân','Thoại Sơn','Tịnh Biên','Tri Tôn',
+  ],
+  'Đồng Nai': [
+    // Đồng Nai cũ
+    'Biên Hòa','Long Khánh','Nhơn Trạch','Long Thành','Vĩnh Cửu',
+    'Tân Phú','Định Quán','Trảng Bom','Thống Nhất','Cẩm Mỹ','Xuân Lộc',
+    // Bình Phước (sáp nhập vào Đồng Nai)
+    'Đồng Xoài','Phước Long','Bình Long','Bù Gia Mập','Lộc Ninh',
+    'Bù Đốp','Hớn Quản','Đồng Phú','Bù Đăng','Chơn Thành','Phú Riềng',
+  ],
+  'Tây Ninh': [
+    // Tây Ninh cũ
+    'Tây Ninh','Hòa Thành','Trảng Bàng','Gò Dầu','Bến Cầu',
+    'Châu Thành (Tây Ninh)','Dương Minh Châu','Tân Biên','Tân Châu',
+    // Long An (sáp nhập vào Tây Ninh)
+    'Tân An','Kiến Tường','Đức Hòa','Đức Huệ','Cần Đước','Cần Giuộc',
+    'Bến Lức','Thủ Thừa','Tân Thạnh','Thạnh Hóa','Mộc Hóa','Vĩnh Hưng',
+    'Châu Thành (Long An)','Tân Trụ',
+  ],
+  'Đồng Tháp': [
+    // Đồng Tháp cũ
+    'Cao Lãnh','Sa Đéc','Hồng Ngự','Tam Nông','Thanh Bình',
+    'Lấp Vò','Lai Vung','Tháp Mười','Châu Thành (Đồng Tháp)',
+    // Tiền Giang (sáp nhập vào Đồng Tháp)
+    'Mỹ Tho','Gò Công','Cai Lậy','Chợ Gạo','Gò Công Đông',
+    'Gò Công Tây','Tân Phú Đông','Tân Phước','Cái Bè','Châu Thành (Tiền Giang)',
+  ],
+  'Vĩnh Long': [
+    // Vĩnh Long cũ
+    'Vĩnh Long','Bình Minh','Long Hồ','Mang Thít','Tam Bình','Trà Ôn','Vũng Liêm',
+    // Bến Tre (sáp nhập vào Vĩnh Long)
+    'Bến Tre','Ba Tri','Bình Đại','Chợ Lách','Giồng Trôm',
+    'Mỏ Cày Bắc','Mỏ Cày Nam','Thạnh Phú','Châu Thành (Bến Tre)',
+    // Trà Vinh (sáp nhập vào Vĩnh Long)
+    'Trà Vinh','Cầu Kè','Cầu Ngang','Duyên Hải','Tiểu Cần','Trà Cú','Châu Thành (Trà Vinh)',
+  ],
+};
 
 function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   const [form, setForm] = React.useState({
@@ -40,6 +182,11 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   const set = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: '' }));
+  };
+
+  const setCity = (val) => {
+    setForm(f => ({ ...f, city: val, district: '' }));
+    setErrors(e => ({ ...e, city: '' }));
   };
 
   const validate = () => {
@@ -88,7 +235,14 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
       });
   };
 
-  const cities = ['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng','Hải Phòng','Cần Thơ','An Giang','Bình Dương','Bình Phước','Đắk Lắk','Đồng Nai','Gia Lai','Khánh Hòa','Lâm Đồng','Long An','Nghệ An','Quảng Nam','Quảng Ngãi','Quảng Ninh','Thanh Hóa','Thừa Thiên Huế','Tiền Giang','Vĩnh Long'];
+  const cities = [
+    'An Giang','Cần Thơ','Đà Nẵng','Đắk Lắk','Đồng Nai','Đồng Tháp',
+    'Gia Lai','Hà Nội','Hải Phòng','Huế','Khánh Hòa','Lâm Đồng',
+    'Nghệ An','Quảng Ngãi','Quảng Ninh','Tây Ninh','Thanh Hóa',
+    'TP. Hồ Chí Minh','Vĩnh Long',
+  ];
+
+  const districtOptions = DISTRICTS[form.city] || [];
 
   const RadioOpt = ({ checked, onSelect, label, sub, right }) => (
     <div className={`radio-opt${checked ? ' checked' : ''}`} onClick={onSelect}>
@@ -146,15 +300,23 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
                 <div className="form-row2">
                   <div className="form-field">
                     <label>Tỉnh / Thành phố *</label>
-                    <select className={`field-input field-select${errors.city ? ' err' : ''}`} value={form.city} onChange={e => set('city', e.target.value)}>
+                    <select className={`field-input field-select${errors.city ? ' err' : ''}`} value={form.city} onChange={e => setCity(e.target.value)}>
                       <option value="">Chọn tỉnh/thành</option>
                       {cities.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     {errors.city && <p className="err-msg">{errors.city}</p>}
                   </div>
                   <div className="form-field">
-                    <label>Quận / Huyện</label>
-                    <input className="field-input" type="text" placeholder="Tên quận/huyện" value={form.district} onChange={e => set('district', e.target.value)}/>
+                    <label>Khu vực / Quận Huyện</label>
+                    <select
+                      className="field-input field-select"
+                      value={form.district}
+                      onChange={e => set('district', e.target.value)}
+                      disabled={!form.city}
+                    >
+                      <option value="">{form.city ? 'Chọn khu vực' : 'Chọn tỉnh/thành trước'}</option>
+                      {districtOptions.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
                   </div>
                 </div>
               </div>
