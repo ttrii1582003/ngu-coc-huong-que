@@ -59,10 +59,12 @@ ngu-coc-huong-que/
 │       ├── ui/             # ProductImage.jsx, StarRating.jsx, Badge.jsx
 │       ├── cart/           # CartItem.jsx, CartSidebar.jsx
 │       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
-│       │                   # LoginPage.jsx, RegisterPage.jsx, MyOrdersPage.jsx, AdminOrdersPage.jsx
+│       │                   # LoginPage.jsx, RegisterPage.jsx, MyOrdersPage.jsx
+│       │                   # AdminOrdersPage.jsx, AdminProductsPage.jsx
 │       ├── App.jsx         # Root + global state + page routing
 │       ├── Header.jsx      # Sticky header, cart button, user avatar/logout
-│       └── CategoryFilter.jsx
+│       ├── CategoryFilter.jsx
+│       └── AdminSidebar.jsx  # Dark sidebar shared by all admin pages
 └── backend/src/main/
     ├── java/com/ngucochuongque/
     │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig, DataInitializer
@@ -98,8 +100,12 @@ ngu-coc-huong-que/
 | POST | `/api/auth/login` | – | Đăng nhập → JWT |
 | POST | `/api/auth/google` | – | Google ID token → JWT |
 | GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
+| PUT | `/api/auth/profile` | Bearer JWT | Cập nhật fullName, phone |
 | GET | `/api/admin/orders` | Bearer ADMIN | Tất cả đơn hàng (`?status=pending\|confirmed\|...`) |
 | PATCH | `/api/admin/orders/{id}/status` | Bearer ADMIN | Cập nhật trạng thái đơn |
+| POST | `/api/admin/products` | Bearer ADMIN | Tạo sản phẩm mới |
+| PUT | `/api/admin/products/{id}` | Bearer ADMIN | Cập nhật sản phẩm |
+| DELETE | `/api/admin/products/{id}` | Bearer ADMIN | Xóa sản phẩm |
 
 ---
 
@@ -144,7 +150,7 @@ window.calcDiscount(p, op) // → % giảm giá (0 nếu không có)
 ### App state (`App.jsx`)
 
 ```js
-page            // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'admin-orders'
+page            // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-orders'|'admin-products'
 selProduct      // product object đang xem chi tiết
 cart            // [{ product, qty }]
 cartOpen        // boolean – sidebar
@@ -154,11 +160,11 @@ toast           // string|null – thông báo 2.8s
 products        // [] fetch từ GET /api/products khi mount
 loadingProducts // boolean
 orderCode       // string|null – từ POST /api/orders
-currentUser     // { email, fullName, avatarUrl, role }|null
+currentUser     // { email, fullName, phone, avatarUrl, role }|null
 token           // JWT|null – persist qua localStorage('hq_token')
 ```
 
-Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'`, `'admin-orders'`.
+Header ẩn trên các trang: `'success'`, `'login'`, `'register'`, `'my-orders'`, `'profile'`, `'admin-orders'`, `'admin-products'`.
 
 ---
 
@@ -236,3 +242,6 @@ Font: `Lora` (heading serif) + `DM Sans` (body sans-serif) từ Google Fonts.
 | Lịch sử đơn hàng của user | `MyOrdersPage.jsx` + `GET /api/orders/my` (expandable detail) |
 | Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH /api/admin/orders/{id}/status` |
 | Admin tự tạo khi startup | `DataInitializer.java` (email: `admin@ngucochuongque.vn`, password: `admin123`) |
+| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products` (modal + live preview) |
+| Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` (sửa tên, SĐT; email readonly) |
+| Checkout pre-fill | `CheckoutPage.jsx` tự điền tên/SĐT/email từ `currentUser` khi đã login |
