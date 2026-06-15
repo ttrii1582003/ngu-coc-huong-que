@@ -101,6 +101,22 @@ public class OrderService {
         return code;
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findAllOrders(String status) {
+        List<Order> orders = (status != null && !status.isBlank())
+                ? orderRepository.findByStatusOrderByCreatedAtDesc(status)
+                : orderRepository.findAllByOrderByCreatedAtDesc();
+        return orders.stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public OrderResponse updateStatus(Integer id, String status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tồn tại: " + id));
+        order.setStatus(status);
+        return toResponse(orderRepository.save(order));
+    }
+
     private OrderResponse toResponse(Order order) {
         List<OrderResponse.OrderItemResponse> items = order.getItems().stream()
                 .map(i -> OrderResponse.OrderItemResponse.builder()
@@ -111,16 +127,21 @@ public class OrderService {
                 .toList();
 
         return OrderResponse.builder()
+                .id(order.getId())
                 .orderCode(order.getOrderCode())
                 .status(order.getStatus())
                 .customerName(order.getCustomerName())
                 .customerPhone(order.getCustomerPhone())
+                .customerEmail(order.getCustomerEmail())
+                .address(order.getAddress())
                 .city(order.getCity())
+                .district(order.getDistrict())
                 .deliveryMethod(order.getDeliveryMethod())
                 .paymentMethod(order.getPaymentMethod())
                 .subtotal(order.getSubtotal())
                 .shippingCost(order.getShippingCost())
                 .totalAmount(order.getTotalAmount())
+                .userId(order.getUserId())
                 .items(items)
                 .createdAt(order.getCreatedAt())
                 .build();
