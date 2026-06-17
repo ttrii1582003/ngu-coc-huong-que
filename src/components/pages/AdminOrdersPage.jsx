@@ -1,5 +1,5 @@
-function AdminOrdersPage({ token, onLogout, onNavigate }) {
-  const [orders, setOrders] = React.useState([]);
+function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
+  const [allOrders, setAllOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filterStatus, setFilterStatus] = React.useState('');
   const [expanded, setExpanded] = React.useState(null);
@@ -15,16 +15,17 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
     cancelled: { text: 'Đã huỷ',       color: '#DC2626', bg: '#FEF2F2' },
   };
 
-  const fetchOrders = (status) => {
+  const fetchOrders = () => {
     setLoading(true);
-    const url = `${window.API_BASE}/admin/orders${status ? `?status=${status}` : ''}`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${window.API_BASE}/admin/orders`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => { setOrders(data); setLoading(false); })
+      .then(data => { setAllOrders(data); setLoading(false); })
       .catch(() => setLoading(false));
   };
 
-  React.useEffect(() => { fetchOrders(filterStatus); }, [filterStatus]);
+  React.useEffect(() => { fetchOrders(); }, []);
+
+  const orders = filterStatus ? allOrders.filter(o => o.status === filterStatus) : allOrders;
 
   const handleStatusChange = (orderId, newStatus) => {
     setUpdatingId(orderId);
@@ -35,10 +36,14 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
     })
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(updated => {
-        setOrders(prev => prev.map(o => o.orderCode === updated.orderCode ? updated : o));
+        setAllOrders(prev => prev.map(o => o.orderCode === updated.orderCode ? updated : o));
         setUpdatingId(null);
+        if (onShowToast) onShowToast('Đã cập nhật trạng thái đơn hàng');
       })
-      .catch(() => setUpdatingId(null));
+      .catch(() => {
+        setUpdatingId(null);
+        if (onShowToast) onShowToast('Lỗi: không thể cập nhật trạng thái');
+      });
   };
 
   const formatDate = iso => new Date(iso).toLocaleDateString('vi-VN', {
@@ -46,9 +51,11 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
   });
 
   const statusCount = STATUS_OPTIONS.reduce((acc, s) => {
-    acc[s] = orders.filter(o => o.status === s).length;
+    acc[s] = allOrders.filter(o => o.status === s).length;
     return acc;
   }, {});
+
+  const GRID = '150px 1fr 120px 110px 140px 120px 90px';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9FA' }}>
@@ -60,7 +67,7 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
 
         {/* Status filter tabs */}
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-          {[{ key: '', label: 'Tất cả', count: orders.length }, ...STATUS_OPTIONS.map(s => ({
+          {[{ key: '', label: 'Tất cả', count: allOrders.length }, ...STATUS_OPTIONS.map(s => ({
             key: s, label: STATUS_LABEL[s].text, count: statusCount[s] || 0
           }))].map(tab => (
             <button key={tab.key} onClick={() => setFilterStatus(tab.key)} style={{
@@ -98,7 +105,7 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
             {/* Table header */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '150px 1fr 120px 110px 140px 120px 36px',
+              gridTemplateColumns: GRID,
               padding: '0.75rem 1.25rem',
               background: '#F9FAFB', borderBottom: '1px solid #F0F0F0',
               fontSize: '0.75rem', fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em'
@@ -115,14 +122,13 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
             {orders.map((order, idx) => {
               const s = STATUS_LABEL[order.status] || { text: order.status, color: '#888', bg: '#F5F5F5' };
               const isOpen = expanded === order.orderCode;
-              const ordId = order.orderCode; // use orderCode as key, need id for PATCH
 
               return (
                 <div key={order.orderCode} style={{ borderBottom: idx < orders.length - 1 ? '1px solid #F0F0F0' : 'none' }}>
                   {/* Main row */}
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: '150px 1fr 120px 110px 140px 120px 36px',
+                    gridTemplateColumns: GRID,
                     padding: '0.9rem 1.25rem', alignItems: 'center',
                     fontSize: '0.85rem'
                   }}>
@@ -132,6 +138,9 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
                     <div>
                       <div style={{ fontWeight: 600, color: '#222' }}>{order.customerName}</div>
                       <div style={{ color: '#888', fontSize: '0.78rem' }}>{order.customerPhone} · {order.city}</div>
+                      <div style={{ color: '#A88878', fontSize: '0.73rem', marginTop: '0.1rem' }}>
+                        {order.items ? order.items.length : 0} sản phẩm
+                      </div>
                     </div>
                     <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
                       {window.formatPrice(order.totalAmount)}
@@ -160,35 +169,88 @@ function AdminOrdersPage({ token, onLogout, onNavigate }) {
                       ))}
                     </select>
                     <button onClick={() => setExpanded(isOpen ? null : order.orderCode)} style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      color: '#aaa', fontSize: '1rem', padding: '0.2rem'
-                    }}>{isOpen ? '▲' : '▼'}</button>
+                      background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 6,
+                      padding: '0.25rem 0.55rem', cursor: 'pointer', color: '#555',
+                      fontSize: '0.75rem', whiteSpace: 'nowrap'
+                    }}>
+                      {isOpen ? '▲ Thu gọn' : '▼ Chi tiết'}
+                    </button>
                   </div>
 
                   {/* Expanded detail */}
                   {isOpen && (
                     <div style={{ borderTop: '1px solid #F5F5F5', padding: '0.85rem 1.25rem', background: '#FAFAFA' }}>
                       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.82rem' }}>
-                        <div style={{ flex: 1, minWidth: 220 }}>
+
+                        {/* Left: product table + financial breakdown */}
+                        <div style={{ flex: 1, minWidth: 260 }}>
                           <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: '#555' }}>Sản phẩm</div>
+
+                          {/* Product table header */}
+                          <div style={{
+                            display: 'grid', gridTemplateColumns: '1fr 90px 40px 90px',
+                            padding: '0.25rem 0', borderBottom: '1px solid #EEE',
+                            fontSize: '0.73rem', fontWeight: 600, color: '#999',
+                          }}>
+                            <span>Tên sản phẩm</span>
+                            <span style={{ textAlign: 'right' }}>Đơn giá</span>
+                            <span style={{ textAlign: 'center' }}>SL</span>
+                            <span style={{ textAlign: 'right' }}>Thành tiền</span>
+                          </div>
+
+                          {/* Product rows */}
                           {order.items.map((item, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.3rem 0', color: '#444' }}>
-                              <span>{item.productName} × {item.quantity}</span>
-                              <span style={{ fontWeight: 600 }}>{window.formatPrice(item.priceAtPurchase * item.quantity)}</span>
+                            <div key={i} style={{
+                              display: 'grid', gridTemplateColumns: '1fr 90px 40px 90px',
+                              padding: '0.3rem 0', color: '#444',
+                              borderBottom: '1px solid #F5F5F5',
+                            }}>
+                              <span>{item.productName}</span>
+                              <span style={{ textAlign: 'right', color: '#666' }}>{window.formatPrice(item.priceAtPurchase)}</span>
+                              <span style={{ textAlign: 'center', color: '#888' }}>×{item.quantity}</span>
+                              <span style={{ textAlign: 'right', fontWeight: 600 }}>{window.formatPrice(item.priceAtPurchase * item.quantity)}</span>
                             </div>
                           ))}
-                          <div style={{ borderTop: '1px solid #EEE', marginTop: '0.4rem', paddingTop: '0.4rem', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                            <span>Tổng</span>
-                            <span style={{ color: 'var(--primary)' }}>{window.formatPrice(order.totalAmount)}</span>
+
+                          {/* Financial breakdown */}
+                          <div style={{ marginTop: '0.5rem', paddingTop: '0.25rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', color: '#666' }}>
+                              <span>Tạm tính</span>
+                              <span>{window.formatPrice(order.subtotal)}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', color: order.shippingCost === 0 ? '#4A7C59' : '#666' }}>
+                              <span>Phí vận chuyển</span>
+                              <span>{order.shippingCost === 0 ? 'Miễn phí' : window.formatPrice(order.shippingCost)}</span>
+                            </div>
+                            <div style={{
+                              display: 'flex', justifyContent: 'space-between',
+                              borderTop: '1px solid #E5E7EB', marginTop: '0.25rem', paddingTop: '0.35rem',
+                              fontWeight: 700, color: 'var(--primary)',
+                            }}>
+                              <span>Tổng cộng</span>
+                              <span>{window.formatPrice(order.totalAmount)}</span>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Right: delivery info */}
                         <div style={{ minWidth: 200, fontSize: '0.82rem', color: '#666' }}>
                           <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: '#555' }}>Thông tin giao hàng</div>
                           <div>📍 {order.address}{order.district ? `, ${order.district}` : ''}, {order.city}</div>
                           <div style={{ marginTop: '0.3rem' }}>📞 {order.customerPhone}</div>
                           {order.customerEmail && <div style={{ marginTop: '0.3rem' }}>✉️ {order.customerEmail}</div>}
                           <div style={{ marginTop: '0.3rem' }}>🚚 {order.deliveryMethod === 'express' ? 'Giao nhanh' : 'Tiêu chuẩn'}</div>
-                          <div style={{ marginTop: '0.3rem' }}>💳 {order.paymentMethod === 'cod' ? 'COD' : 'Chuyển khoản'}</div>
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              background: order.paymentMethod === 'cod' ? '#FEF3E2' : '#EBF5EF',
+                              color: order.paymentMethod === 'cod' ? '#C8873A' : '#4A7C59',
+                              padding: '0.2rem 0.55rem', borderRadius: 20,
+                              fontSize: '0.75rem', fontWeight: 600,
+                            }}>
+                              {order.paymentMethod === 'cod' ? '💵 COD' : '🏦 Chuyển khoản'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

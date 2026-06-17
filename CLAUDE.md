@@ -18,6 +18,8 @@ cd backend && mvn spring-boot:run
 
 **Yêu cầu**: Node.js, Java 17+, Maven 3.6+, PostgreSQL với database `ngu_coc_huong_que`.
 
+> **Dev server** phục vụ với `Cache-Control: no-cache` — không cần hard-refresh để thấy thay đổi JSX.
+
 `backend/src/main/resources/application.yml` (gitignored — tạo từ `application.yml.example`):
 ```yaml
 spring.datasource.url: jdbc:postgresql://localhost:5432/ngu_coc_huong_que
@@ -36,7 +38,7 @@ google.client-id: <Google OAuth Client ID>
 |---|---|
 | Frontend | React 18.3.1 + Babel Standalone CDN, thuần CSS, Node.js dev server |
 | Backend | Java 17, Spring Boot 3.3.0, Spring Security + JWT (jjwt 0.11.5) |
-| Database | PostgreSQL 17, Flyway migrations (V1→V3), Hibernate/JPA |
+| Database | PostgreSQL 17, Flyway migrations (V1→V8), Hibernate/JPA |
 | Auth | JWT HS256 24h, BCrypt, Google Identity Services (GSI) |
 
 ---
@@ -194,8 +196,10 @@ Zone map: `OrderService.ZONE_MAP` (22 tỉnh → north/central/south)
 - Register: BCrypt hash, email unique → 409 nếu trùng
 - Login: verify BCrypt → 401 nếu sai hoặc `auth_provider = 'google'`; admin → redirect panel
 - Google: verify ID token qua `GoogleIdTokenVerifier` → find-or-create user
-- Token: `localStorage('hq_token')`, verify `/api/auth/me` khi mount
+- Token: `localStorage('hq_token')`, verify `/api/auth/me` khi mount; chỉ xóa token khi nhận 401 (không xóa khi lỗi mạng)
 - `DataInitializer` tạo admin khi startup: `admin@ngucochuongque.vn` / `admin123`
+
+**CORS** (`CorsConfig.java`): cho phép `GET, POST, PUT, PATCH, DELETE, OPTIONS` từ `http://localhost:8080`.
 
 ---
 
@@ -245,8 +249,8 @@ Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 | Persist login | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
 | Header avatar + logout | `Header.jsx` |
 | Lịch sử đơn hàng | `MyOrdersPage.jsx` + `GET /api/orders/my` |
-| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status` |
-| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products` |
+| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status`; tab đếm chính xác (filter client-side từ `allOrders`); expand "▼ Chi tiết" → bảng sản phẩm + breakdown tài chính (tạm tính / phí ship / tổng) |
+| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products`; grid 6 cột, badge danh mục có màu, giá gốc + % giảm |
 | Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` |
 | Checkout pre-fill | `CheckoutPage.jsx` (điền tên/SĐT/email từ `currentUser`) |
 | Phí ship theo vùng | `CheckoutPage.jsx` + `OrderService.java` |

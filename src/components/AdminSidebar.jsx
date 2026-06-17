@@ -17,9 +17,14 @@ function AdminSidebar({ activePage, onNavigate, onLogout }) {
             <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.85" transform="rotate(-12 15 8.5)"/>
             <ellipse cx="15" cy="8.5" rx="3.5" ry="6" fill="#C8873A" opacity="0.65" transform="rotate(12 15 8.5)"/>
           </svg>
-          <span style={{ fontFamily: 'Lora, serif', fontWeight: 700, fontSize: '0.95rem', color: '#F9FAFB' }}>
-            Ngũ Cốc
-          </span>
+          <div>
+            <div style={{ fontFamily: 'Lora, serif', fontWeight: 700, fontSize: '0.95rem', color: '#F9FAFB', lineHeight: 1.2 }}>
+              Ngũ Cốc
+            </div>
+            <div style={{ fontFamily: 'Lora, serif', fontWeight: 600, fontSize: '0.78rem', color: '#C8873A', lineHeight: 1.2 }}>
+              Hương Quê
+            </div>
+          </div>
         </div>
         <span style={{
           background: '#C8873A22', color: '#C8873A',

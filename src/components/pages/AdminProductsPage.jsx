@@ -8,9 +8,9 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
   const [toast, setToastMsg] = React.useState(null);
 
   const CATEGORIES = [
-    { id: 'breakfast', label: 'Ngũ cốc ăn sáng' },
-    { id: 'nuts',      label: 'Hạt dinh dưỡng' },
-    { id: 'diet',      label: 'Giảm cân & Healthy' },
+    { id: 'breakfast', label: 'Ngũ cốc ăn sáng', short: 'Ăn sáng',  color: '#C8873A', bg: '#FEF3E2' },
+    { id: 'nuts',      label: 'Hạt dinh dưỡng',  short: 'Hạt',       color: '#2563EB', bg: '#EFF6FF' },
+    { id: 'diet',      label: 'Giảm cân & Healthy', short: 'Healthy', color: '#4A7C59', bg: '#EBF5EF' },
   ];
 
   const BG_COLORS = ['#FFF8F0','#F0F8FF','#F0FFF0','#FFF0F8','#F5F0FF','#FFFFF0'];
@@ -119,56 +119,100 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
             {/* Table header */}
             <div style={{
-              display: 'grid', gridTemplateColumns: '56px 1fr 100px 110px 90px 110px 100px',
-              padding: '0.7rem 1.25rem', background: '#F9FAFB', borderBottom: '1px solid #F0F0F0',
+              display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 120px 120px',
+              padding: '0.75rem 1.5rem', background: '#F9FAFB', borderBottom: '1px solid #F0F0F0',
               fontSize: '0.73rem', fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em'
             }}>
-              <span>Ảnh</span><span>Tên sản phẩm</span><span>Danh mục</span>
-              <span>Giá</span><span>Trọng lượng</span><span>Nhãn</span><span>Thao tác</span>
+              <span>Ảnh</span>
+              <span>Tên sản phẩm</span>
+              <span>Danh mục</span>
+              <span>Giá bán</span>
+              <span>Nhãn</span>
+              <span>Thao tác</span>
             </div>
 
             {products.length === 0 && (
               <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Chưa có sản phẩm.</div>
             )}
 
-            {products.map((p, idx) => (
-              <div key={p.id} style={{
-                display: 'grid', gridTemplateColumns: '56px 1fr 100px 110px 90px 110px 100px',
-                padding: '0.8rem 1.25rem', alignItems: 'center',
-                borderBottom: idx < products.length - 1 ? '1px solid #F5F5F5' : 'none',
-                fontSize: '0.85rem'
-              }}>
-                {/* Mini preview */}
-                <div style={{ width: 40, height: 40 }}>
-                  <ProductImage product={p} />
+            {products.map((p, idx) => {
+              const cat = CATEGORIES.find(c => c.id === p.category);
+              const discount = p.originalPrice && p.originalPrice > p.price
+                ? Math.round((1 - p.price / p.originalPrice) * 100)
+                : null;
+              return (
+                <div key={p.id} style={{
+                  display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 120px 120px',
+                  padding: '1rem 1.5rem', alignItems: 'center',
+                  borderBottom: idx < products.length - 1 ? '1px solid #F5F5F5' : 'none',
+                }}>
+                  {/* Ảnh */}
+                  <div style={{ width: 44, height: 44 }}>
+                    <ProductImage product={p} />
+                  </div>
+
+                  {/* Tên + trọng lượng */}
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '0.9rem' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.76rem', color: '#A88878', marginTop: '0.15rem' }}>{p.weight}</div>
+                  </div>
+
+                  {/* Danh mục badge */}
+                  <div>
+                    {cat ? (
+                      <span style={{
+                        display: 'inline-block',
+                        background: cat.bg, color: cat.color,
+                        padding: '0.22rem 0.65rem', borderRadius: 20,
+                        fontSize: '0.76rem', fontWeight: 600,
+                      }}>{cat.short}</span>
+                    ) : (
+                      <span style={{ color: '#aaa', fontSize: '0.8rem' }}>{p.category}</span>
+                    )}
+                  </div>
+
+                  {/* Giá */}
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.92rem' }}>
+                      {window.formatPrice(p.price)}
+                    </div>
+                    {p.originalPrice && p.originalPrice > p.price && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.1rem' }}>
+                        <span style={{ fontSize: '0.74rem', color: '#bbb', textDecoration: 'line-through' }}>
+                          {window.formatPrice(p.originalPrice)}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', background: '#FEF2F2', color: '#DC2626', padding: '0.05rem 0.3rem', borderRadius: 4, fontWeight: 600 }}>
+                          -{discount}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Nhãn */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {p.badge ? (
+                      <span style={{ display: 'inline-block', background: '#FEF3E2', color: '#C8873A', padding: '0.22rem 0.6rem', borderRadius: 20, fontSize: '0.76rem', fontWeight: 600 }}>
+                        {p.badge}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#ddd', fontSize: '0.8rem' }}>—</span>
+                    )}
+                  </div>
+
+                  {/* Thao tác */}
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => openEdit(p)} style={{
+                      background: '#EFF6FF', color: '#2563EB', border: 'none',
+                      borderRadius: 6, padding: '0.35rem 0.75rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500
+                    }}>Sửa</button>
+                    <button onClick={() => setDeleteId(p.id)} style={{
+                      background: '#FEF2F2', color: '#DC2626', border: 'none',
+                      borderRadius: 6, padding: '0.35rem 0.75rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500
+                    }}>Xóa</button>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontWeight: 600, color: '#222' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#aaa' }}>{(p.benefits || []).slice(0, 1).join('')}</div>
-                </div>
-                <span style={{ color: '#666', fontSize: '0.8rem' }}>
-                  {CATEGORIES.find(c => c.id === p.category)?.label || p.category}
-                </span>
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--primary)' }}>{window.formatPrice(p.price)}</div>
-                  {p.originalPrice && <div style={{ fontSize: '0.75rem', color: '#bbb', textDecoration: 'line-through' }}>{window.formatPrice(p.originalPrice)}</div>}
-                </div>
-                <span style={{ color: '#666' }}>{p.weight}</span>
-                <span>{p.badge ? (
-                  <span style={{ background: '#FEF3E2', color: '#C8873A', padding: '0.2rem 0.5rem', borderRadius: 12, fontSize: '0.73rem', fontWeight: 600 }}>{p.badge}</span>
-                ) : <span style={{ color: '#ddd' }}>—</span>}</span>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button onClick={() => openEdit(p)} style={{
-                    background: '#EFF6FF', color: '#2563EB', border: 'none',
-                    borderRadius: 6, padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500
-                  }}>Sửa</button>
-                  <button onClick={() => setDeleteId(p.id)} style={{
-                    background: '#FEF2F2', color: '#DC2626', border: 'none',
-                    borderRadius: 6, padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500
-                  }}>Xóa</button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

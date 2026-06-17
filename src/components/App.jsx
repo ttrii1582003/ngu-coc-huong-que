@@ -28,14 +28,21 @@ function App() {
       headers: { 'Authorization': 'Bearer ' + token },
     })
       .then(r => {
-        if (!r.ok) throw new Error('Token expired');
+        if (r.status === 401) {
+          localStorage.removeItem('hq_token');
+          setToken(null);
+          return null;
+        }
+        if (!r.ok) return null; // lỗi mạng / server tạm thời — giữ token
         return r.json();
       })
-      .then(data => setCurrentUser(data))
-      .catch(() => {
-        localStorage.removeItem('hq_token');
-        setToken(null);
-      });
+      .then(data => {
+        if (data) {
+          setCurrentUser(data);
+          if (data.role === 'admin') setPage('admin-orders');
+        }
+      })
+      .catch(() => {}); // network error — không xóa token
   }, []);
 
   const onLogin = (newToken, user) => {
@@ -50,6 +57,12 @@ function App() {
     setToken(null);
     setCurrentUser(null);
     if (window.google) window.google.accounts.id.disableAutoSelect();
+    navigateTo('home');
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2800);
   };
 
   const addToCart = (product, qty = 1) => {
@@ -58,8 +71,7 @@ function App() {
       if (ex) return prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + qty } : i);
       return [...prev, { product, qty }];
     });
-    setToast('Đã thêm "' + product.name + '" vào giỏ');
-    setTimeout(() => setToast(null), 2800);
+    showToast('Đã thêm "' + product.name + '" vào giỏ');
     setCartOpen(true);
   };
 
@@ -139,7 +151,7 @@ function App() {
         <MyOrdersPage token={token} onBack={() => navigateTo('home')} />
       )}
       {page === 'admin-orders' && (
-        <AdminOrdersPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
+        <AdminOrdersPage token={token} onLogout={onLogout} onNavigate={navigateTo} onShowToast={showToast} />
       )}
       {page === 'admin-products' && (
         <AdminProductsPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
