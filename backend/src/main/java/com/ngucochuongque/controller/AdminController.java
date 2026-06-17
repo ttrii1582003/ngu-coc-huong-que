@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -21,6 +22,13 @@ public class AdminController {
 
     private final OrderService orderService;
     private final ProductService productService;
+
+    // --- Stats ---
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> getStats() {
+        return ResponseEntity.ok(orderService.getStats());
+    }
 
     // --- Orders ---
 

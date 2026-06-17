@@ -10,10 +10,15 @@ import com.ngucochuongque.exception.ResourceNotFoundException;
 import com.ngucochuongque.repository.OrderRepository;
 import com.ngucochuongque.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -94,6 +99,17 @@ public class OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Sản phẩm không tồn tại: " + itemReq.getProductId()));
 
+            if (Boolean.FALSE.equals(product.getIsActive())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sản phẩm '" + product.getName() + "' hiện không còn bán");
+            }
+            if (product.getStockQuantity() < itemReq.getQuantity()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sản phẩm '" + product.getName() + "' chỉ còn " + product.getStockQuantity() + " sản phẩm");
+            }
+            product.setStockQuantity(product.getStockQuantity() - itemReq.getQuantity());
+            productRepository.save(product);
+
             OrderItem item = new OrderItem();
             item.setOrder(order);
             item.setProduct(product);
@@ -137,6 +153,19 @@ public class OrderService {
         return subtotal >= freeThreshold ? 0 : (isCentral ? CENTRAL_STANDARD : OTHER_STANDARD);
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Long> getStats() {
+        OffsetDateTime todayStart = java.time.LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"))
+                .atStartOfDay(ZoneId.of("Asia/Ho_Chi_Minh")).toOffsetDateTime();
+        OffsetDateTime todayEnd = todayStart.plusDays(1);
+        return Map.of(
+            "ordersToday",  orderRepository.countOrdersInRange(todayStart, todayEnd),
+            "revenueToday", orderRepository.sumRevenueInRange(todayStart, todayEnd),
+            "pendingCount", orderRepository.countByStatus("pending"),
+            "totalOrders",  orderRepository.count()
+        );
+    }
+
     private String generateOrderCode() {
         String code;
         do {
@@ -160,7 +189,40 @@ public class OrderService {
     public OrderResponse updateStatus(Integer id, String status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tồn tại: " + id));
+        String prevStatus = order.getStatus();
         order.setStatus(status);
+        // Hoàn stock khi chuyển sang cancelled (chỉ hoàn 1 lần)
+        if ("cancelled".equals(status) && !"cancelled".equals(prevStatus)) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                if (product != null) {
+                    product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                    productRepository.save(product);
+                }
+            }
+        }
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse cancelByCustomer(String orderCode, Integer userId) {
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tồn tại: " + orderCode));
+        if (!order.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền hủy đơn này");
+        }
+        if (!"pending".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Chỉ có thể hủy đơn hàng đang chờ xác nhận");
+        }
+        order.setStatus("cancelled");
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
         return toResponse(orderRepository.save(order));
     }
 

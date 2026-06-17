@@ -3,6 +3,7 @@ function MyOrdersPage({ token, onBack }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [expanded, setExpanded] = React.useState(null);
+  const [cancelling, setCancelling] = React.useState(null);
 
   React.useEffect(() => {
     fetch(`${window.API_BASE}/orders/my`, {
@@ -26,6 +27,24 @@ function MyOrdersPage({ token, onBack }) {
   });
 
   const toggleExpand = code => setExpanded(prev => prev === code ? null : code);
+
+  const handleCancel = (orderCode) => {
+    if (!confirm('Bạn có chắc muốn hủy đơn hàng #' + orderCode + '?')) return;
+    setCancelling(orderCode);
+    fetch(`${window.API_BASE}/orders/${orderCode}/cancel`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(updated => {
+        setOrders(prev => prev.map(o => o.orderCode === updated.orderCode ? updated : o));
+        setCancelling(null);
+      })
+      .catch(() => {
+        alert('Không thể hủy đơn hàng. Vui lòng thử lại.');
+        setCancelling(null);
+      });
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: '3rem' }}>
@@ -149,6 +168,27 @@ function MyOrdersPage({ token, onBack }) {
                         <span>📍 {order.city}</span>
                         <span>💳 {order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}</span>
                       </div>
+
+                      {/* Cancel button — chỉ hiện khi pending */}
+                      {order.status === 'pending' && (
+                        <div style={{ marginTop: '1rem', borderTop: '1px solid #f0ede8', paddingTop: '0.85rem' }}>
+                          <button
+                            disabled={cancelling === order.orderCode}
+                            onClick={() => handleCancel(order.orderCode)}
+                            style={{
+                              background: 'none', border: '1px solid #DC2626', color: '#DC2626',
+                              borderRadius: 8, padding: '0.4rem 1rem', cursor: 'pointer',
+                              fontSize: '0.82rem', fontWeight: 600,
+                              opacity: cancelling === order.orderCode ? 0.5 : 1,
+                            }}
+                          >
+                            {cancelling === order.orderCode ? 'Đang hủy...' : '✕ Hủy đơn hàng'}
+                          </button>
+                          <span style={{ fontSize: '0.75rem', color: '#aaa', marginLeft: '0.75rem' }}>
+                            Chỉ hủy được khi đơn đang chờ xác nhận
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -62,18 +62,32 @@ function ProductDetailPage({ selectedProduct: product, addToCart, navigateTo }) 
               ))}
             </div>
 
+            {/* Tồn kho */}
+            {product.stockQuantity !== undefined && (
+              <div style={{ marginBottom: '0.75rem', fontSize: '0.83rem' }}>
+                {product.stockQuantity === 0 ? (
+                  <span style={{ color: '#DC2626', fontWeight: 600 }}>✕ Hết hàng</span>
+                ) : product.stockQuantity <= 10 ? (
+                  <span style={{ color: '#C8873A', fontWeight: 600 }}>⚠ Còn {product.stockQuantity} sản phẩm</span>
+                ) : (
+                  <span style={{ color: '#4A7C59', fontWeight: 600 }}>✓ Còn hàng ({product.stockQuantity} sản phẩm)</span>
+                )}
+              </div>
+            )}
+
             <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap' }}>
               <div className="qty-control qty-lg">
                 <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
                 <span className="qty-val">{qty}</span>
-                <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
+                <button className="qty-btn" onClick={() => setQty(q => Math.min(product.stockQuantity || 999, q + 1))}>+</button>
               </div>
               <button
                 className={`btn btn-primary btn-lg${justAdded ? ' btn-success' : ''}`}
                 style={{ flex:1, minWidth:180 }}
                 onClick={handleAdd}
+                disabled={product.stockQuantity === 0}
               >
-                {justAdded ? (
+                {product.stockQuantity === 0 ? 'Hết hàng' : justAdded ? (
                   <>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M3 8l3.5 3.5 6.5-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

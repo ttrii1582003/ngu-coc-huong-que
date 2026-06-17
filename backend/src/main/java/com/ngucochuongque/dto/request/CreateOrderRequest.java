@@ -14,9 +14,11 @@ public class CreateOrderRequest {
     private String customerName;
 
     @NotBlank(message = "Vui lòng nhập số điện thoại")
-    @Pattern(regexp = "^[0-9]{9,11}$", message = "Số điện thoại không hợp lệ")
+    @Pattern(regexp = "^0[0-9]{9,10}$", message = "Số điện thoại không hợp lệ (VD: 0912345678)")
     private String customerPhone;
 
+    @NotBlank(message = "Vui lòng nhập email để nhận xác nhận đơn hàng")
+    @Email(message = "Email không đúng định dạng")
     private String customerEmail;
 
     @NotBlank(message = "Vui lòng nhập địa chỉ")

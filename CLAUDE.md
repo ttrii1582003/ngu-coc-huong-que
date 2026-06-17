@@ -57,7 +57,7 @@ ngu-coc-huong-que/
 │       ├── cart/           # CartItem.jsx, CartSidebar.jsx
 │       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
 │       │                   # LoginPage, RegisterPage, MyOrdersPage, ProfilePage
-│       │                   # AdminOrdersPage, AdminProductsPage
+│       │                   # AdminDashboardPage, AdminOrdersPage, AdminProductsPage
 │       ├── App.jsx
 │       ├── Header.jsx
 │       ├── ProductCard.jsx
@@ -105,11 +105,13 @@ ngu-coc-huong-que/
 | POST | `/api/auth/google` | – | Google ID token → JWT |
 | GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
 | PUT | `/api/auth/profile` | Bearer JWT | Cập nhật fullName, phone |
+| GET | `/api/admin/stats` | ADMIN | KPI: ordersToday, revenueToday, pendingCount, totalOrders |
 | GET | `/api/admin/orders` | ADMIN | Tất cả đơn (`?status=pending\|confirmed\|...`) |
-| PATCH | `/api/admin/orders/{id}/status` | ADMIN | Cập nhật trạng thái |
+| PATCH | `/api/admin/orders/{id}/status` | ADMIN | Cập nhật trạng thái (enum validated) |
 | POST | `/api/admin/products` | ADMIN | Tạo sản phẩm |
 | PUT | `/api/admin/products/{id}` | ADMIN | Cập nhật sản phẩm |
-| DELETE | `/api/admin/products/{id}` | ADMIN | Xóa sản phẩm |
+| DELETE | `/api/admin/products/{id}` | ADMIN | Soft delete (đặt `is_active=false`) |
+| PATCH | `/api/orders/{orderCode}/cancel` | Bearer JWT | Khách tự hủy đơn (chỉ khi status=pending) |
 
 ---
 
@@ -120,7 +122,7 @@ ngu-coc-huong-que/
 | Bảng | Nội dung |
 |---|---|
 | `categories` | id (varchar PK), label |
-| `products` | 10 sản phẩm, FK → categories |
+| `products` | 10 sản phẩm, FK → categories; `stock_quantity` (V9), `is_active` (V9, soft delete) |
 | `product_benefits` | 1-to-many với products |
 | `cities` | 34 tỉnh/thành (phủ sóng toàn quốc, theo cải cách hành chính 1/7/2025) |
 | `orders` | Đơn hàng: customer info, delivery, amounts, user_id (nullable FK) |
@@ -157,9 +159,9 @@ window.BANK_INFO           // { bankName, accountNumber, accountHolder }
 ### App state (`App.jsx`)
 
 ```js
-page               // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-orders'|'admin-products'
+page               // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-dashboard'|'admin-orders'|'admin-products'
 selProduct         // product object đang xem
-cart               // [{ product, qty }]
+cart               // [{ product, qty }] – persisted to localStorage('hq_cart')
 cartOpen           // boolean
 searchQuery        // debounced 280ms
 activeCategory     // id đang lọc
@@ -172,7 +174,7 @@ currentUser        // { email, fullName, phone, avatarUrl, role }|null
 token              // JWT|null – localStorage('hq_token')
 ```
 
-Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admin-orders`, `admin-products`.
+Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admin-dashboard`, `admin-orders`, `admin-products`.
 
 ---
 
@@ -249,8 +251,11 @@ Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 | Persist login | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
 | Header avatar + logout | `Header.jsx` |
 | Lịch sử đơn hàng | `MyOrdersPage.jsx` + `GET /api/orders/my` |
-| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status`; tab đếm chính xác (filter client-side từ `allOrders`); expand "▼ Chi tiết" → bảng sản phẩm + breakdown tài chính (tạm tính / phí ship / tổng) |
-| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products`; grid 6 cột, badge danh mục có màu, giá gốc + % giảm |
+| Admin dashboard | `AdminDashboardPage.jsx` + `GET /api/admin/stats`; 4 KPI cards (đơn hôm nay, doanh thu, chờ xác nhận, tổng đơn) |
+| Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status`; search theo tên/mã/SĐT; tab đếm chính xác; expand chi tiết |
+| Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products`; filter danh mục; cột tồn kho; soft delete |
+| Khách hủy đơn | `MyOrdersPage.jsx` + `PATCH /api/orders/{code}/cancel`; chỉ được hủy khi `status=pending`; hoàn stock tự động |
+| Quản lý tồn kho | `Product.stockQuantity`; trừ khi đặt đơn, hoàn khi hủy; hiển thị trên ProductDetailPage + AdminProductsPage |
 | Hồ sơ cá nhân | `ProfilePage.jsx` + `PUT /api/auth/profile` |
 | Checkout pre-fill | `CheckoutPage.jsx` (điền tên/SĐT/email từ `currentUser`) |
 | Phí ship theo vùng | `CheckoutPage.jsx` + `OrderService.java` |

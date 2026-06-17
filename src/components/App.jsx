@@ -1,7 +1,9 @@
 function App() {
   const [page, setPage] = React.useState('home');
   const [selProduct, setSelProduct] = React.useState(null);
-  const [cart, setCart] = React.useState([]);
+  const [cart, setCart] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('hq_cart') || '[]'); } catch (_) { return []; }
+  });
   const [cartOpen, setCartOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeCategory, setActiveCategory] = React.useState('all');
@@ -12,6 +14,11 @@ function App() {
   const [orderPaymentMethod, setOrderPaymentMethod] = React.useState(null);
   const [currentUser, setCurrentUser] = React.useState(null);
   const [token, setToken] = React.useState(() => localStorage.getItem('hq_token'));
+
+  // Persist cart to localStorage
+  React.useEffect(() => {
+    try { localStorage.setItem('hq_cart', JSON.stringify(cart)); } catch (_) {}
+  }, [cart]);
 
   // Load products
   React.useEffect(() => {
@@ -39,7 +46,7 @@ function App() {
       .then(data => {
         if (data) {
           setCurrentUser(data);
-          if (data.role === 'admin') setPage('admin-orders');
+          if (data.role === 'admin') setPage('admin-dashboard');
         }
       })
       .catch(() => {}); // network error — không xóa token
@@ -49,7 +56,7 @@ function App() {
     localStorage.setItem('hq_token', newToken);
     setToken(newToken);
     setCurrentUser(user);
-    navigateTo(user.role === 'admin' ? 'admin-orders' : 'home');
+    navigateTo(user.role === 'admin' ? 'admin-dashboard' : 'home');
   };
 
   const onLogout = () => {
@@ -97,7 +104,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = !['success', 'login', 'register', 'my-orders', 'profile', 'admin-orders', 'admin-products'].includes(page);
+  const showHeader = !['success', 'login', 'register', 'my-orders', 'profile', 'admin-dashboard', 'admin-orders', 'admin-products'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -149,6 +156,9 @@ function App() {
       )}
       {page === 'my-orders' && (
         <MyOrdersPage token={token} onBack={() => navigateTo('home')} />
+      )}
+      {page === 'admin-dashboard' && (
+        <AdminDashboardPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
       )}
       {page === 'admin-orders' && (
         <AdminOrdersPage token={token} onLogout={onLogout} onNavigate={navigateTo} onShowToast={showToast} />

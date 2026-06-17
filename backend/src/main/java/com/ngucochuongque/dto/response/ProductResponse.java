@@ -22,4 +22,5 @@ public class ProductResponse {
     private String bgColor;
     private String accentColor;
     private String imageUrl;
+    private Integer stockQuantity;
 }

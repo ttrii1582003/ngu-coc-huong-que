@@ -37,4 +37,11 @@ public class OrderController {
     public ResponseEntity<OrderResponse> getByCode(@PathVariable String orderCode) {
         return ResponseEntity.ok(orderService.findByCode(orderCode));
     }
+
+    @PatchMapping("/{orderCode}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @PathVariable String orderCode,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(orderService.cancelByCustomer(orderCode, currentUser.getId()));
+    }
 }

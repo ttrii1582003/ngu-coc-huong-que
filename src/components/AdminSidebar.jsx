@@ -1,7 +1,8 @@
 function AdminSidebar({ activePage, onNavigate, onLogout }) {
   const NAV = [
-    { id: 'admin-orders',   icon: '📋', label: 'Đơn hàng' },
-    { id: 'admin-products', icon: '📦', label: 'Sản phẩm' },
+    { id: 'admin-dashboard', icon: '📊', label: 'Tổng quan' },
+    { id: 'admin-orders',    icon: '📋', label: 'Đơn hàng' },
+    { id: 'admin-products',  icon: '📦', label: 'Sản phẩm' },
   ];
 
   return (

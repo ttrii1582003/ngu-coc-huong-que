@@ -1,6 +1,7 @@
 function AdminProductsPage({ token, onLogout, onNavigate }) {
   const [products, setProducts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [filterCat, setFilterCat] = React.useState('');
   const [modal, setModal] = React.useState(null); // null | { mode: 'create'|'edit', product?: {} }
   const [form, setForm] = React.useState({});
   const [saving, setSaving] = React.useState(false);
@@ -32,7 +33,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
   };
 
   const openCreate = () => {
-    setForm({ categoryId: 'breakfast', bgColor: '#FFF8F0', accentColor: '#C8873A', benefits: '', imageUrl: '' });
+    setForm({ categoryId: 'breakfast', bgColor: '#FFF8F0', accentColor: '#C8873A', benefits: '', imageUrl: '', stockQuantity: 0 });
     setModal({ mode: 'create' });
   };
 
@@ -44,6 +45,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
       badge: p.badge || '', badgeType: p.badgeType || '',
       benefits: (p.benefits || []).join('\n'),
       imageUrl: p.imageUrl || '',
+      stockQuantity: p.stockQuantity ?? 0,
       _id: p.id
     });
     setModal({ mode: 'edit', product: p });
@@ -64,6 +66,7 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
     badgeType: form.badgeType?.trim() || null,
     imageUrl: form.imageUrl?.trim() || null,
     benefits: form.benefits ? form.benefits.split('\n').map(s => s.trim()).filter(Boolean) : [],
+    stockQuantity: Number(form.stockQuantity) || 0,
   });
 
   const handleSave = () => {
@@ -113,13 +116,28 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
           }}>+ Thêm sản phẩm</button>
         </div>
 
+        {/* Category filter */}
+        {!loading && (
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            {[{ id: '', short: 'Tất cả', color: '#555', bg: '#F3F4F6' }, ...CATEGORIES].map(c => (
+              <button key={c.id} onClick={() => setFilterCat(c.id)} style={{
+                background: filterCat === c.id ? c.color : '#fff',
+                color: filterCat === c.id ? '#fff' : c.color,
+                border: `1px solid ${c.color}`,
+                borderRadius: 20, padding: '0.3rem 0.85rem',
+                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+              }}>{c.short}</button>
+            ))}
+          </div>
+        )}
+
         {loading && <div style={{ textAlign: 'center', padding: '3rem', color: '#888' }}>Đang tải...</div>}
 
         {!loading && (
           <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
             {/* Table header */}
             <div style={{
-              display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 120px 120px',
+              display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 80px 120px 120px',
               padding: '0.75rem 1.5rem', background: '#F9FAFB', borderBottom: '1px solid #F0F0F0',
               fontSize: '0.73rem', fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em'
             }}>
@@ -127,24 +145,25 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
               <span>Tên sản phẩm</span>
               <span>Danh mục</span>
               <span>Giá bán</span>
+              <span>Tồn kho</span>
               <span>Nhãn</span>
               <span>Thao tác</span>
             </div>
 
-            {products.length === 0 && (
+            {products.filter(p => !filterCat || p.category === filterCat).length === 0 && (
               <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Chưa có sản phẩm.</div>
             )}
 
-            {products.map((p, idx) => {
+            {products.filter(p => !filterCat || p.category === filterCat).map((p, idx, arr) => {
               const cat = CATEGORIES.find(c => c.id === p.category);
               const discount = p.originalPrice && p.originalPrice > p.price
                 ? Math.round((1 - p.price / p.originalPrice) * 100)
                 : null;
               return (
                 <div key={p.id} style={{
-                  display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 120px 120px',
+                  display: 'grid', gridTemplateColumns: '60px 1fr 110px 140px 80px 120px 120px',
                   padding: '1rem 1.5rem', alignItems: 'center',
-                  borderBottom: idx < products.length - 1 ? '1px solid #F5F5F5' : 'none',
+                  borderBottom: idx < arr.length - 1 ? '1px solid #F5F5F5' : 'none',
                 }}>
                   {/* Ảnh */}
                   <div style={{ width: 44, height: 44 }}>
@@ -185,6 +204,22 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
                           -{discount}%
                         </span>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Tồn kho */}
+                  <div>
+                    <span style={{
+                      fontWeight: 600, fontSize: '0.88rem',
+                      color: p.stockQuantity === 0 ? '#DC2626' : p.stockQuantity <= 10 ? '#C8873A' : '#4A7C59',
+                    }}>
+                      {p.stockQuantity ?? 0}
+                    </span>
+                    {p.stockQuantity === 0 && (
+                      <div style={{ fontSize: '0.68rem', color: '#DC2626' }}>Hết hàng</div>
+                    )}
+                    {p.stockQuantity > 0 && p.stockQuantity <= 10 && (
+                      <div style={{ fontSize: '0.68rem', color: '#C8873A' }}>Sắp hết</div>
                     )}
                   </div>
 
@@ -256,9 +291,14 @@ function AdminProductsPage({ token, onLogout, onNavigate }) {
                     <input className="field-input" type="number" value={form.originalPrice || ''} onChange={e => set('originalPrice', e.target.value)} placeholder="Để trống nếu không có" />
                   </Field>
                 </div>
-                <Field label="Trọng lượng *">
-                  <input className="field-input" value={form.weight || ''} onChange={e => set('weight', e.target.value)} placeholder="500g / 1kg" />
-                </Field>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                  <Field label="Trọng lượng *">
+                    <input className="field-input" value={form.weight || ''} onChange={e => set('weight', e.target.value)} placeholder="500g / 1kg" />
+                  </Field>
+                  <Field label="Tồn kho (sản phẩm) *">
+                    <input className="field-input" type="number" min="0" value={form.stockQuantity ?? ''} onChange={e => set('stockQuantity', e.target.value)} placeholder="0" />
+                  </Field>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
                   <Field label="Nhãn (badge)">
                     <input className="field-input" value={form.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="Bán chạy" />

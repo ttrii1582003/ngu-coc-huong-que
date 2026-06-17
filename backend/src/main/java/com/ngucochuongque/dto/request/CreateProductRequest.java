@@ -22,4 +22,5 @@ public class CreateProductRequest {
     private String badgeType;
     private String imageUrl;
     private List<String> benefits;
+    @NotNull @Min(0) private Integer stockQuantity = 0;
 }

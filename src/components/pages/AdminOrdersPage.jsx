@@ -2,6 +2,7 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
   const [allOrders, setAllOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filterStatus, setFilterStatus] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [expanded, setExpanded] = React.useState(null);
   const [updatingId, setUpdatingId] = React.useState(null);
 
@@ -25,7 +26,16 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
 
   React.useEffect(() => { fetchOrders(); }, []);
 
-  const orders = filterStatus ? allOrders.filter(o => o.status === filterStatus) : allOrders;
+  const orders = allOrders.filter(o => {
+    if (filterStatus && o.status !== filterStatus) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return o.orderCode.toLowerCase().includes(q)
+          || o.customerName.toLowerCase().includes(q)
+          || (o.customerPhone && o.customerPhone.includes(q));
+    }
+    return true;
+  });
 
   const handleStatusChange = (orderId, newStatus) => {
     setUpdatingId(orderId);
@@ -85,6 +95,23 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
               }}>{tab.count}</span>
             </button>
           ))}
+        </div>
+
+        {/* Search */}
+        <div style={{ marginBottom: '1rem', position: 'relative', maxWidth: 380 }}>
+          <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: '0.9rem' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Tìm theo mã đơn, tên hoặc SĐT..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              padding: '0.5rem 0.75rem 0.5rem 2.1rem',
+              border: '1px solid #E5E7EB', borderRadius: 8,
+              fontSize: '0.85rem', outline: 'none', background: '#fff',
+            }}
+          />
         </div>
 
         {/* Loading */}

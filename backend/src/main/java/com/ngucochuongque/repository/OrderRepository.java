@@ -17,4 +17,18 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findAllByOrderByCreatedAtDesc();
 
     List<Order> findByStatusOrderByCreatedAtDesc(String status);
+
+    long countByStatus(String status);
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT COUNT(o) FROM Order o WHERE o.createdAt >= :start AND o.createdAt < :end")
+    long countOrdersInRange(
+        @org.springframework.data.repository.query.Param("start") java.time.OffsetDateTime start,
+        @org.springframework.data.repository.query.Param("end")   java.time.OffsetDateTime end);
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.createdAt >= :start AND o.createdAt < :end AND o.status <> 'cancelled'")
+    long sumRevenueInRange(
+        @org.springframework.data.repository.query.Param("start") java.time.OffsetDateTime start,
+        @org.springframework.data.repository.query.Param("end")   java.time.OffsetDateTime end);
 }

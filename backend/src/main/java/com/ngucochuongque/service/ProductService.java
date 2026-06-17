@@ -39,7 +39,7 @@ public class ProductService {
         } else if (hasSearch) {
             products = productRepository.searchByName(search);
         } else {
-            products = productRepository.findAll();
+            products = productRepository.findAllActive();
         }
 
         return products.stream().map(this::toResponse).toList();
@@ -75,10 +75,10 @@ public class ProductService {
 
     @Transactional
     public void delete(Integer id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Sản phẩm không tồn tại: " + id);
-        }
-        productRepository.deleteById(id);
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm không tồn tại: " + id));
+        p.setIsActive(false);
+        productRepository.save(p);
     }
 
     private void applyRequest(Product p, CreateProductRequest req, Category cat) {
@@ -93,6 +93,8 @@ public class ProductService {
         p.setBadge(req.getBadge());
         p.setBadgeType(req.getBadgeType());
         p.setImageUrl(req.getImageUrl());
+        if (req.getStockQuantity() != null) p.setStockQuantity(req.getStockQuantity());
+        if (p.getIsActive() == null) p.setIsActive(true);
         if (p.getRating() == null) p.setRating(BigDecimal.valueOf(5.0));
         if (p.getReviews() == null) p.setReviews(0);
         List<String> benefits = req.getBenefits();
@@ -128,6 +130,7 @@ public class ProductService {
                 .bgColor(p.getBgColor())
                 .accentColor(p.getAccentColor())
                 .imageUrl(p.getImageUrl())
+                .stockQuantity(p.getStockQuantity())
                 .build();
     }
 }

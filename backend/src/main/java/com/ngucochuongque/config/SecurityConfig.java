@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/cities/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/my").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/auth/profile").authenticated()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
