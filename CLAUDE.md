@@ -28,6 +28,8 @@ spring.datasource.password: <password>
 jwt.secret: <long secret>
 jwt.expiration: 86400000
 google.client-id: <Google OAuth Client ID>
+server.servlet.encoding.charset: UTF-8   # bắt buộc trên Windows
+server.servlet.encoding.force: true
 ```
 
 ---
@@ -38,7 +40,7 @@ google.client-id: <Google OAuth Client ID>
 |---|---|
 | Frontend | React 18.3.1 + Babel Standalone CDN, thuần CSS, Node.js dev server |
 | Backend | Java 17, Spring Boot 3.3.0, Spring Security + JWT (jjwt 0.11.5) |
-| Database | PostgreSQL 17, Flyway migrations (V1→V8), Hibernate/JPA |
+| Database | PostgreSQL 17, Flyway migrations (V1→V9), Hibernate/JPA |
 | Auth | JWT HS256 24h, BCrypt, Google Identity Services (GSI) |
 
 ---
@@ -84,7 +86,8 @@ ngu-coc-huong-que/
             ├── V5__add_product_image_url.sql
             ├── V6__seed_product_images.sql
             ├── V7__update_provinces_2025.sql
-            └── V8__add_remaining_provinces_2025.sql
+            ├── V8__add_remaining_provinces_2025.sql
+            └── V9__add_stock_and_soft_delete.sql
 ```
 
 ---
@@ -117,7 +120,7 @@ ngu-coc-huong-que/
 
 ## Database
 
-7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`, migrations V1→V8):
+7 bảng, Flyway (`baseline-on-migrate: true`, `baseline-version: 2`, migrations V1→V9):
 
 | Bảng | Nội dung |
 |---|---|
@@ -190,7 +193,7 @@ Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admi
 | Miền Trung | 20.000đ | ≥ 300.000đ | 35.000đ |
 | Miền Bắc / Nam | 40.000đ | ≥ 500.000đ | 65.000đ |
 
-Zone map: `OrderService.ZONE_MAP` (22 tỉnh → north/central/south)
+Zone map: `OrderService.ZONE_MAP` (34 tỉnh → north/central/south)
 
 - `paymentMethod`: `'cod'` hoặc `'bank'`. Chuyển khoản: hiển thị `BANK_INFO` trong checkout + success page; đơn xác nhận thủ công trong 24h
 
