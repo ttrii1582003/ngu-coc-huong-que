@@ -14,7 +14,7 @@ const SHIPPING_ZONES = {
 
 const ZONE_RATES = {
   central: { standard: 20000, freeThreshold: 300000, express: 35000 },
-  other:   { standard: 40000, freeThreshold: 500000, express: 65000 },
+  other:   { standard: 30000, freeThreshold: 500000, express: 55000 },
 };
 
 function getZoneRates(city) {
@@ -349,7 +349,7 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
   );
 
   const standardLabel = !form.city
-    ? formatPrice(ZONE_RATES.other.standard)
+    ? `Từ ${formatPrice(ZONE_RATES.central.standard)}`
     : (subtotal >= rates.freeThreshold ? 'Miễn phí' : formatPrice(rates.standard));
 
   return (
@@ -421,7 +421,7 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
               <h2 className="section-title">Phương thức vận chuyển</h2>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 <RadioOpt checked={delivery==='standard'} onSelect={()=>setDelivery('standard')} label="Giao hàng tiêu chuẩn" sub="3–5 ngày làm việc" right={standardLabel}/>
-                <RadioOpt checked={delivery==='express'} onSelect={()=>setDelivery('express')} label="Giao hàng nhanh" sub="1–2 ngày làm việc" right={formatPrice(rates.express)}/>
+                <RadioOpt checked={delivery==='express'} onSelect={()=>setDelivery('express')} label="Giao hàng nhanh" sub="1–2 ngày làm việc" right={!form.city ? `Từ ${formatPrice(ZONE_RATES.central.express)}` : formatPrice(rates.express)}/>
               </div>
               {form.city && SHIPPING_ZONES[form.city] !== 'central' && (
                 <p style={{ margin:'8px 0 0', fontSize:12, color:'var(--text-muted)' }}>

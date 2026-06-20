@@ -4,6 +4,8 @@ function MyOrdersPage({ token, onBack }) {
   const [error, setError] = React.useState(null);
   const [expanded, setExpanded] = React.useState(null);
   const [cancelling, setCancelling] = React.useState(null);
+  const [confirmCancel, setConfirmCancel] = React.useState(null); // orderCode đang chờ xác nhận
+  const [cancelError, setCancelError] = React.useState(null);
 
   React.useEffect(() => {
     fetch(`${window.API_BASE}/orders/my`, {
@@ -29,7 +31,12 @@ function MyOrdersPage({ token, onBack }) {
   const toggleExpand = code => setExpanded(prev => prev === code ? null : code);
 
   const handleCancel = (orderCode) => {
-    if (!confirm('Bạn có chắc muốn hủy đơn hàng #' + orderCode + '?')) return;
+    setConfirmCancel(orderCode);
+    setCancelError(null);
+  };
+
+  const doCancel = () => {
+    const orderCode = confirmCancel;
     setCancelling(orderCode);
     fetch(`${window.API_BASE}/orders/${orderCode}/cancel`, {
       method: 'PATCH',
@@ -39,9 +46,10 @@ function MyOrdersPage({ token, onBack }) {
       .then(updated => {
         setOrders(prev => prev.map(o => o.orderCode === updated.orderCode ? updated : o));
         setCancelling(null);
+        setConfirmCancel(null);
       })
       .catch(() => {
-        alert('Không thể hủy đơn hàng. Vui lòng thử lại.');
+        setCancelError('Không thể hủy đơn hàng. Vui lòng thử lại.');
         setCancelling(null);
       });
   };
@@ -197,6 +205,92 @@ function MyOrdersPage({ token, onBack }) {
           </div>
         )}
       </div>
+
+      {/* Modal xác nhận hủy đơn */}
+      {confirmCancel && (
+        <div
+          onClick={() => { if (!cancelling) setConfirmCancel(null); }}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff', borderRadius: 14, padding: '1.75rem 1.5rem',
+              width: '100%', maxWidth: 400,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 6v4M10 14h.01" stroke="#DC2626" strokeWidth="1.8" strokeLinecap="round"/>
+                  <circle cx="10" cy="10" r="8.5" stroke="#DC2626" strokeWidth="1.5"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#111' }}>Xác nhận hủy đơn hàng</div>
+                <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.1rem' }}>#{confirmCancel}</div>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 1.1rem', fontSize: '0.85rem', color: '#555', lineHeight: 1.55 }}>
+              Đơn hàng sẽ bị hủy và không thể khôi phục. Tồn kho sản phẩm sẽ được hoàn lại tự động.
+            </p>
+
+            {cancelError && (
+              <div style={{
+                background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8,
+                padding: '0.6rem 0.85rem', fontSize: '0.8rem', color: '#DC2626', marginBottom: '1rem',
+              }}>
+                {cancelError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.65rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setConfirmCancel(null)}
+                disabled={!!cancelling}
+                style={{
+                  background: '#F3F4F6', border: 'none', borderRadius: 8,
+                  padding: '0.55rem 1.1rem', cursor: 'pointer',
+                  fontSize: '0.85rem', color: '#555', fontWeight: 500,
+                  opacity: cancelling ? 0.5 : 1,
+                }}
+              >
+                Không, giữ đơn
+              </button>
+              <button
+                onClick={doCancel}
+                disabled={!!cancelling}
+                style={{
+                  background: cancelling ? '#fca5a5' : '#DC2626',
+                  border: 'none', borderRadius: 8,
+                  padding: '0.55rem 1.25rem', cursor: cancelling ? 'not-allowed' : 'pointer',
+                  fontSize: '0.85rem', color: '#fff', fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                }}
+              >
+                {cancelling ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
+                      <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"/>
+                      <path d="M7 1.5A5.5 5.5 0 0 1 12.5 7" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    Đang hủy...
+                  </>
+                ) : 'Xác nhận hủy'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

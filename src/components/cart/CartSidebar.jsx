@@ -1,7 +1,9 @@
 function CartSidebar({ cart, total, onClose, onRemove, onUpdateQty, onCheckout }) {
   const count = cart.reduce((s, i) => s + i.qty, 0);
-  const shipping = total >= 300000 ? 0 : 30000;
-  const pct = Math.min(100, (total / 300000) * 100);
+  // Miền Trung: miễn phí ≥ 300k | Miền Bắc/Nam: miễn phí ≥ 500k
+  const isCentralFree = total >= 300000;
+  const isAllFree = total >= 500000;
+  const pct = Math.min(100, (total / (isCentralFree ? 500000 : 300000)) * 100);
 
   return (
     <div className="cart-sidebar">
@@ -35,27 +37,34 @@ function CartSidebar({ cart, total, onClose, onRemove, onUpdateQty, onCheckout }
 
       {cart.length > 0 && (
         <div className="cart-footer">
-          {total < 300000 && (
+          {!isAllFree && (
             <div className="ship-progress-wrap">
               <div className="ship-bar">
                 <div className="ship-fill" style={{ width:`${pct}%` }}/>
               </div>
-              <p className="ship-hint">Thêm <strong>{formatPrice(300000 - total)}</strong> để miễn phí vận chuyển</p>
+              {!isCentralFree && (
+                <p className="ship-hint">Thêm <strong>{formatPrice(300000 - total)}</strong> để miễn phí ship khu vực <strong>Miền Trung</strong></p>
+              )}
+              {isCentralFree && (
+                <p className="ship-hint" style={{ color: 'var(--green)' }}>
+                  Miễn phí ship <strong>Miền Trung</strong>! Thêm <strong>{formatPrice(500000 - total)}</strong> để miễn phí <strong>toàn quốc</strong>
+                </p>
+              )}
             </div>
           )}
-          {total >= 300000 && (
-            <div className="ship-free-badge">Bạn được miễn phí vận chuyển!</div>
+          {isAllFree && (
+            <div className="ship-free-badge">Miễn phí vận chuyển toàn quốc!</div>
           )}
           <div className="cart-row"><span>Tạm tính</span><span>{formatPrice(total)}</span></div>
           <div className="cart-row">
             <span>Vận chuyển</span>
-            <span style={{ color: shipping === 0 ? 'var(--green)' : 'var(--text)' }}>
-              {shipping === 0 ? 'Miễn phí' : formatPrice(shipping)}
+            <span style={{ color: '#999', fontSize: '0.82em' }}>
+              {isAllFree ? <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: '1em' }}>Miễn phí</span> : 'Tính ở bước thanh toán'}
             </span>
           </div>
           <div className="cart-total-row">
             <span>Tổng cộng</span>
-            <span className="cart-grand">{formatPrice(total + shipping)}</span>
+            <span className="cart-grand">{formatPrice(total)}{!isAllFree && <span style={{ fontSize: '0.65em', fontWeight: 400, color: '#bbb', marginLeft: 4 }}>+ phí ship</span>}</span>
           </div>
           <button className="btn btn-primary btn-full btn-lg" onClick={onCheckout}>
             Tiến hành thanh toán

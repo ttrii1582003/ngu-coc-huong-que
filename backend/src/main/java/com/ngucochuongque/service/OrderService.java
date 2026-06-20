@@ -30,8 +30,8 @@ public class OrderService {
     private static final int CENTRAL_STANDARD  = 20_000;
     private static final int CENTRAL_EXPRESS   = 35_000;
     private static final int CENTRAL_FREE      = 300_000;
-    private static final int OTHER_STANDARD    = 40_000;
-    private static final int OTHER_EXPRESS     = 65_000;
+    private static final int OTHER_STANDARD    = 30_000;
+    private static final int OTHER_EXPRESS     = 55_000;
     private static final int OTHER_FREE        = 500_000;
 
     private static final java.util.Map<String, String> ZONE_MAP = java.util.Map.ofEntries(
