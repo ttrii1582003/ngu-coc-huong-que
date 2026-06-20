@@ -282,8 +282,7 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
     if (!form.name.trim()) e.name = 'Vui lòng nhập họ tên';
     if (!form.phone.trim()) e.phone = 'Vui lòng nhập số điện thoại';
     else if (!/^0[0-9]{9,10}$/.test(form.phone.replace(/\s/g, ''))) e.phone = 'Số điện thoại không hợp lệ (VD: 0912345678)';
-    if (!form.email.trim()) e.email = 'Vui lòng nhập email để nhận xác nhận đơn hàng';
-    else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = 'Email không đúng định dạng';
+    if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = 'Email không đúng định dạng';
     if (!form.address.trim()) e.address = 'Vui lòng nhập địa chỉ';
     if (!form.city) e.city = 'Vui lòng chọn tỉnh/thành';
     return e;
@@ -381,7 +380,7 @@ function CheckoutPage({ cart, token, currentUser, onSuccess, navigateTo }) {
                     {errors.phone && <p className="err-msg">{errors.phone}</p>}
                   </div>
                   <div className="form-field">
-                    <label>Email *</label>
+                    <label>Email</label>
                     <input className={`field-input${errors.email ? ' err' : ''}`} type="email" placeholder="example@email.com" value={form.email} onChange={e => set('email', e.target.value)}/>
                     {errors.email && <p className="err-msg">{errors.email}</p>}
                   </div>
