@@ -3,6 +3,7 @@ package com.ngucochuongque.service;
 import com.ngucochuongque.dto.request.CreateOrderRequest;
 import com.ngucochuongque.dto.request.OrderItemRequest;
 import com.ngucochuongque.dto.response.OrderResponse;
+import com.ngucochuongque.dto.response.RevenuePointResponse;
 import com.ngucochuongque.entity.Order;
 import com.ngucochuongque.entity.OrderItem;
 import com.ngucochuongque.entity.Product;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -155,15 +157,33 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> getStats() {
-        OffsetDateTime todayStart = java.time.LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"))
-                .atStartOfDay(ZoneId.of("Asia/Ho_Chi_Minh")).toOffsetDateTime();
+        ZoneId tz = ZoneId.of("Asia/Ho_Chi_Minh");
+        OffsetDateTime todayStart = java.time.LocalDate.now(tz)
+                .atStartOfDay(tz).toOffsetDateTime();
         OffsetDateTime todayEnd = todayStart.plusDays(1);
+        OffsetDateTime monthStart = java.time.LocalDate.now(tz).withDayOfMonth(1)
+                .atStartOfDay(tz).toOffsetDateTime();
         return Map.of(
-            "ordersToday",  orderRepository.countOrdersInRange(todayStart, todayEnd),
-            "revenueToday", orderRepository.sumRevenueInRange(todayStart, todayEnd),
-            "pendingCount", orderRepository.countByStatus("pending"),
-            "totalOrders",  orderRepository.count()
+            "ordersToday",   orderRepository.countActiveOrdersInRange(todayStart, todayEnd),
+            "revenueToday",  orderRepository.sumRevenueInRange(todayStart, todayEnd),
+            "pendingCount",  orderRepository.countByStatus("pending"),
+            "revenueMonth",  orderRepository.sumRevenueInRange(monthStart, todayEnd)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<RevenuePointResponse> getRevenueSeries(String groupBy, LocalDate from, LocalDate to) {
+        ZoneId tz = ZoneId.of("Asia/Ho_Chi_Minh");
+        OffsetDateTime start = from.atStartOfDay(tz).toOffsetDateTime();
+        OffsetDateTime end   = to.plusDays(1).atStartOfDay(tz).toOffsetDateTime();
+        List<Object[]> rows = "month".equals(groupBy)
+                ? orderRepository.findMonthlyRevenue(start, end)
+                : orderRepository.findDailyRevenue(start, end);
+        return rows.stream().map(r -> RevenuePointResponse.builder()
+                .period(r[0].toString())
+                .orderCount(((Number) r[1]).longValue())
+                .revenue(((Number) r[2]).longValue())
+                .build()).toList();
     }
 
     private String generateOrderCode() {

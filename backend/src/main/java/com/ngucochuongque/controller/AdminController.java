@@ -4,14 +4,17 @@ import com.ngucochuongque.dto.request.CreateProductRequest;
 import com.ngucochuongque.dto.request.UpdateOrderStatusRequest;
 import com.ngucochuongque.dto.response.OrderResponse;
 import com.ngucochuongque.dto.response.ProductResponse;
+import com.ngucochuongque.dto.response.RevenuePointResponse;
 import com.ngucochuongque.service.OrderService;
 import com.ngucochuongque.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,16 @@ public class AdminController {
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Long>> getStats() {
         return ResponseEntity.ok(orderService.getStats());
+    }
+
+    // --- Revenue series ---
+
+    @GetMapping("/revenue")
+    public ResponseEntity<List<RevenuePointResponse>> getRevenueSeries(
+            @RequestParam(defaultValue = "day") String groupBy,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(orderService.getRevenueSeries(groupBy, from, to));
     }
 
     // --- Orders ---

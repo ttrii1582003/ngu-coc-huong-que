@@ -1,7 +1,20 @@
 function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
   const [allOrders, setAllOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [filterStatus, setFilterStatus] = React.useState('');
+  const [filterStatus, setFilterStatus] = React.useState(() => {
+    const init = window._adminOrdersInit || {};
+    return init.status || '';
+  });
+  const [filterToday, setFilterToday] = React.useState(() => {
+    const init = window._adminOrdersInit || {};
+    return init.today || false;
+  });
+  const [filterMonth, setFilterMonth] = React.useState(() => {
+    const init = window._adminOrdersInit || {};
+    const val = init.month || false;
+    window._adminOrdersInit = null;
+    return val;
+  });
   const [searchQuery, setSearchQuery] = React.useState('');
   const [expanded, setExpanded] = React.useState(null);
   const [updatingId, setUpdatingId] = React.useState(null);
@@ -26,7 +39,16 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
 
   React.useEffect(() => { fetchOrders(); }, []);
 
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
   const orders = allOrders.filter(o => {
+    if (filterToday && new Date(o.createdAt).toDateString() !== todayStr) return false;
+    if (filterMonth) {
+      const d = new Date(o.createdAt);
+      if (d.getMonth() !== thisMonth || d.getFullYear() !== thisYear) return false;
+    }
     if (filterStatus && o.status !== filterStatus) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -76,7 +98,7 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
         </h1>
 
         {/* Status filter tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem', alignItems: 'center' }}>
           {[{ key: '', label: 'Tất cả', count: allOrders.length }, ...STATUS_OPTIONS.map(s => ({
             key: s, label: STATUS_LABEL[s].text, count: statusCount[s] || 0
           }))].map(tab => (
@@ -95,6 +117,32 @@ function AdminOrdersPage({ token, onLogout, onNavigate, onShowToast }) {
               }}>{tab.count}</span>
             </button>
           ))}
+          {filterToday && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE',
+              borderRadius: 8, padding: '0.4rem 0.75rem', fontSize: '0.82rem', fontWeight: 600,
+            }}>
+              📅 Hôm nay
+              <button onClick={() => setFilterToday(false)} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#2563EB', fontSize: '0.9rem', lineHeight: 1, padding: '0 0 0 2px',
+              }}>×</button>
+            </span>
+          )}
+          {filterMonth && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#F5F0FF', color: '#7C3AC8', border: '1px solid #DDD6FE',
+              borderRadius: 8, padding: '0.4rem 0.75rem', fontSize: '0.82rem', fontWeight: 600,
+            }}>
+              📅 {now.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+              <button onClick={() => setFilterMonth(false)} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#7C3AC8', fontSize: '0.9rem', lineHeight: 1, padding: '0 0 0 2px',
+              }}>×</button>
+            </span>
+          )}
         </div>
 
         {/* Search */}

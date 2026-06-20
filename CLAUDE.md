@@ -60,6 +60,7 @@ ngu-coc-huong-que/
 │       ├── pages/          # HomePage, ProductDetailPage, CheckoutPage, OrderSuccessPage
 │       │                   # LoginPage, RegisterPage, MyOrdersPage, ProfilePage
 │       │                   # AdminDashboardPage, AdminOrdersPage, AdminProductsPage
+│       │                   # AdminRevenuePage
 │       ├── App.jsx
 │       ├── Header.jsx
 │       ├── ProductCard.jsx
@@ -70,8 +71,8 @@ ngu-coc-huong-que/
     │   ├── config/         # SecurityConfig, JwtUtil, JwtAuthFilter, CorsConfig, DataInitializer
     │   ├── entity/         # User, Product, Category, Order, OrderItem, City, ProductBenefit
     │   ├── repository/
-    │   ├── dto/            # request/ + response/
-    │   ├── service/        # AuthService, ProductService, OrderService
+    │   ├── dto/            # request/ + response/ (RevenuePointResponse)
+    │   ├── service/        # AuthService, ProductService, OrderService, OrderSchedulerService (planned)
     │   ├── controller/     # AuthController, ProductController, OrderController
     │   │                   # CategoryController, CityController, AdminController
     │   └── exception/      # GlobalExceptionHandler, ResourceNotFoundException
@@ -108,7 +109,8 @@ ngu-coc-huong-que/
 | POST | `/api/auth/google` | – | Google ID token → JWT |
 | GET | `/api/auth/me` | Bearer JWT | Thông tin user hiện tại |
 | PUT | `/api/auth/profile` | Bearer JWT | Cập nhật fullName, phone |
-| GET | `/api/admin/stats` | ADMIN | KPI: ordersToday, revenueToday, pendingCount, totalOrders |
+| GET | `/api/admin/stats` | ADMIN | KPI: ordersToday, revenueToday, pendingCount, revenueMonth (chỉ tính đơn `delivered`) |
+| GET | `/api/admin/revenue` | ADMIN | Chuỗi doanh thu (`?groupBy=day\|month&from=YYYY-MM-DD&to=YYYY-MM-DD`) |
 | GET | `/api/admin/orders` | ADMIN | Tất cả đơn (`?status=pending\|confirmed\|...`) |
 | PATCH | `/api/admin/orders/{id}/status` | ADMIN | Cập nhật trạng thái (enum validated) |
 | POST | `/api/admin/products` | ADMIN | Tạo sản phẩm |
@@ -162,7 +164,7 @@ window.BANK_INFO           // { bankName, accountNumber, accountHolder }
 ### App state (`App.jsx`)
 
 ```js
-page               // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-dashboard'|'admin-orders'|'admin-products'
+page               // 'home'|'product'|'checkout'|'success'|'login'|'register'|'my-orders'|'profile'|'admin-dashboard'|'admin-orders'|'admin-products'|'admin-revenue'
 selProduct         // product object đang xem
 cart               // [{ product, qty }] – persisted to localStorage('hq_cart')
 cartOpen           // boolean
@@ -177,7 +179,7 @@ currentUser        // { email, fullName, phone, avatarUrl, role }|null
 token              // JWT|null – localStorage('hq_token')
 ```
 
-Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admin-dashboard`, `admin-orders`, `admin-products`.
+Header ẩn trên: `success`, `login`, `register`, `my-orders`, `profile`, `admin-dashboard`, `admin-orders`, `admin-products`, `admin-revenue`.
 
 ---
 
@@ -254,7 +256,7 @@ Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 | Persist login | `App.jsx` + `localStorage('hq_token')` + `GET /api/auth/me` |
 | Header avatar + logout | `Header.jsx` |
 | Lịch sử đơn hàng | `MyOrdersPage.jsx` + `GET /api/orders/my` |
-| Admin dashboard | `AdminDashboardPage.jsx` + `GET /api/admin/stats`; 4 KPI cards (đơn hôm nay, doanh thu, chờ xác nhận, tổng đơn) |
+| Admin dashboard | `AdminDashboardPage.jsx` + `GET /api/admin/stats`; truy cập nhanh đầu trang; 4 KPI cards (đơn hôm nay, doanh thu hôm nay, chờ xác nhận, doanh thu tháng); bảng đơn gần đây; auto-refresh 60s |
 | Admin quản lý đơn hàng | `AdminOrdersPage.jsx` + `GET /api/admin/orders` + `PATCH status`; search theo tên/mã/SĐT; tab đếm chính xác; expand chi tiết |
 | Admin quản lý sản phẩm | `AdminProductsPage.jsx` + POST/PUT/DELETE `/api/admin/products`; filter danh mục; cột tồn kho; soft delete |
 | Khách hủy đơn | `MyOrdersPage.jsx` + `PATCH /api/orders/{code}/cancel`; chỉ được hủy khi `status=pending`; hoàn stock tự động |
@@ -264,3 +266,4 @@ Font: `Lora` (heading serif) + `DM Sans` (body) từ Google Fonts.
 | Phí ship theo vùng | `CheckoutPage.jsx` + `OrderService.java` |
 | Dropdown khu vực giao hàng | `CheckoutPage.jsx` `DISTRICTS` (19 tỉnh × districts, cascade từ tỉnh) |
 | Chuyển khoản ngân hàng | `CheckoutPage.jsx` + `OrderSuccessPage.jsx` + `window.BANK_INFO` |
+| Trang doanh thu admin | `AdminRevenuePage.jsx` + `GET /api/admin/revenue`; biểu đồ cột Chart.js; toggle ngày/tháng; date picker; 3 summary cards; bảng chi tiết; chỉ tính đơn `delivered` |

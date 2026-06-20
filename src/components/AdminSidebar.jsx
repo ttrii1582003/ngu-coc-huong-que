@@ -3,6 +3,7 @@ function AdminSidebar({ activePage, onNavigate, onLogout }) {
     { id: 'admin-dashboard', icon: '📊', label: 'Tổng quan' },
     { id: 'admin-orders',    icon: '📋', label: 'Đơn hàng' },
     { id: 'admin-products',  icon: '📦', label: 'Sản phẩm' },
+    { id: 'admin-revenue',   icon: '💹', label: 'Doanh thu' },
   ];
 
   return (

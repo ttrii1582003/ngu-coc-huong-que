@@ -104,7 +104,7 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  const showHeader = !['success', 'login', 'register', 'my-orders', 'profile', 'admin-dashboard', 'admin-orders', 'admin-products'].includes(page);
+  const showHeader = !['success', 'login', 'register', 'my-orders', 'profile', 'admin-dashboard', 'admin-orders', 'admin-products', 'admin-revenue'].includes(page);
 
   return (
     <div style={{ minHeight:'100vh' }}>
@@ -165,6 +165,9 @@ function App() {
       )}
       {page === 'admin-products' && (
         <AdminProductsPage token={token} onLogout={onLogout} onNavigate={navigateTo} />
+      )}
+      {page === 'admin-revenue' && (
+        <AdminRevenuePage token={token} onLogout={onLogout} onNavigate={navigateTo} />
       )}
       {page === 'profile' && (
         <ProfilePage
